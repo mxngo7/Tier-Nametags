@@ -1,0 +1,139 @@
+{
+  "providers": [
+  	{
+      "type": "bitmap",
+      "file": "tiernametags:font/sword.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE001"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/diamond_pot.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE002"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/netherite_pot.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE003"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/axe.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE004"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/uhc.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE005"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/smp.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE006"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/crystal.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE007"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/diamond_smp.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE008"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/cart.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE009"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/mace.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE00A"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/ht1.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE00E"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/ht2.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE00F"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/ht3.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE010"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/ht4.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE011"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/ht5.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE012"
+      ]
+    }
+  ]
+}
