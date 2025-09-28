@@ -1,2 +1,2 @@
-# tiernametags
-TierNametags is a fabric mod that displays OceTiers information in player nametags.
+# TierNametags
+TierNametags is a Minecraft fabric mod that provides OceTiers information in player nametags.
