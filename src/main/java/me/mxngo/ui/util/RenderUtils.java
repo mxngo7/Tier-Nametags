@@ -1,9 +1,9 @@
 package me.mxngo.ui.util;
 
 import me.mxngo.TierNametags;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -102,10 +102,10 @@ public class RenderUtils {
 	
 	public static void renderScaledText(Screen screen, DrawContext context, Text text, int x, int y, int colour, float scale, boolean shadow) {
 		scale *= Math.min((float) screen.width / iX, (float) screen.height / iY);
-		context.getMatrices().pushMatrix();
-		context.getMatrices().scale(scale);
+		context.getMatrices().push();
+		context.getMatrices().scale(scale, scale, scale);
 		context.drawText(screen.getTextRenderer(), text, getScaled((int) (x / scale), iX, screen.width), getScaled((int) (y / scale), iY, screen.height), colour, shadow);
-		context.getMatrices().popMatrix();
+		context.getMatrices().pop();
 	}
 	
 	public static void renderScaledText(Screen screen, DrawContext context, Text text, int x, int y, int colour, float scale) {
@@ -167,7 +167,7 @@ public class RenderUtils {
 	public static void renderTexture(Screen screen, DrawContext context, Identifier identifier, int x, int y, int width, int height) {
 		width = getScaled(width, iX, screen.width);
 		height = getScaled(height, iY, screen.height);
-		context.drawTexture(RenderPipelines.GUI_TEXTURED, identifier, getScaled(x, iX, screen.width), getScaled(y, iY, screen.height), 0, 0, width, height, width, height);
+		context.drawTexture(RenderLayer::getGuiTextured, identifier, getScaled(x, iX, screen.width), getScaled(y, iY, screen.height), 0, 0, width, height, width, height);
 	}
 	
 	public static void renderTexture(Screen screen, DrawContext context, Identifier identifier, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
@@ -177,7 +177,7 @@ public class RenderUtils {
 		textureHeight = getScaled(textureHeight, iY, screen.height);
 		u = getScaled(u, iX, screen.width);
 		v = getScaled(v, iY, screen.height);
-		context.drawTexture(RenderPipelines.GUI_TEXTURED, identifier, getScaled(x, iX, screen.width), getScaled(y, iY, screen.height), u, v, width, height, textureWidth, textureHeight);
+		context.drawTexture(RenderLayer::getGuiTextured, identifier, getScaled(x, iX, screen.width), getScaled(y, iY, screen.height), u, v, width, height, textureWidth, textureHeight);
 	}
 	
 	public static boolean isMouseHovering(Screen screen, double mouseX, double mouseY, int x1, int y1, int x2, int y2) {

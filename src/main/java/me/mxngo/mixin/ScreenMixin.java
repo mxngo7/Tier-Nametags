@@ -363,18 +363,6 @@ public class ScreenMixin {
 	    		playerNameStartColour = tier.getLightColour();
 	    		playerNameStopColour = tier.getDarkColour();
 	    	} else {
-//	    		Tier tier = Tier.NONE;
-//	    		if (index >= 0 && index <= 1) tier = Tier.HT1;
-//	    		else if (index >= 2 && index <= 4) tier = Tier.LT1;
-//	    		else if (index >= 5 && index <= 9) tier = Tier.HT2;
-//	    		else if (index >= 10 && index <= 24) tier = Tier.LT2;
-//	    		else if (index >= 25 && index <= 74) tier = Tier.HT3;
-//	    		else if (index >= 75 && index <= 149) tier = Tier.LT3;
-//	    		else if (index >= 150 && index <= 299) tier = Tier.HT4;
-//	    		else if (index >= 300 && index <= 399) tier = Tier.LT4;
-//	    		else if (index >= 400 && index <= 499) tier = Tier.HT5;
-//	    		else tier = Tier.LT5;
-	    		
 	    		Tier tier = player.getBestTier();
 	    		
 	    		if (tier.getIconPath() != null) {
@@ -559,7 +547,7 @@ public class ScreenMixin {
 		}
 	}
 	
-	@Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/gui/screen/Screen;render(Lnet/minecraft/client/gui/DrawContext;IIF)V")
+	@Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/gui/screen/Screen;render(Lnet/minecraft/client/gui/DrawContext;IIF)V")
 	public void render(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo info) {
 		Screen screen = (Screen) ((Object) this);
 		if (screen instanceof ProfileScreen) this.renderProfileScreen((ProfileScreen) screen, context, mouseX, mouseY, delta);

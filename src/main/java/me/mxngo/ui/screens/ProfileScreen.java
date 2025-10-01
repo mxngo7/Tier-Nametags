@@ -190,7 +190,8 @@ public class ProfileScreen extends Screen {
 		float scale = RenderUtils.getScaled(150f, RenderUtils.iY, this.height);
 		
 		Quaternionf quaternion = new Quaternionf().rotateAxis((float) Math.toRadians(180), new Vector3f(1, 0, 0));
-		InventoryScreen.drawEntity(context, 0, 0, RenderUtils.getScaled(RenderUtils.iX / 4, RenderUtils.iX, this.width), RenderUtils.getScaled(RenderUtils.iY, RenderUtils.iY, this.height), scale, new Vector3f(0, 1f, 0), quaternion, null, playerEntity);
+		InventoryScreen.drawEntity(context, 0, 0, scale, new Vector3f(0, 1f, 0f), quaternion, null, playerEntity);
+		
     }
 
     @Override
@@ -248,19 +249,6 @@ public class ProfileScreen extends Screen {
         }
         
         List<AbstractClientPlayerEntity> players = mc.world.getPlayers();
-        
-//        AbstractClientPlayerEntity player = new AbstractClientPlayerEntity(mc.world, new GameProfile(UUID.randomUUID(), playerName)) {
-//         	public SkinTextures getSkinTextures() {
-//         		SkinTextures textures = SkinCache.getPlayer(playerName);
-//         		if (textures != null) return textures;
-//         		return SkinCache.getUnknownSkinTextures();
-//         	};
-//         };
-         
-//         player.limbAnimator.setSpeed(1.0f);
-//         player.limbAnimator.
-        
-//        if (!(this.isMouseDown() && this.widget.isHovered())) accessor.setHorizontalRotation(accessor.getHorizontalRotation() + 0.02f);
         
         boolean exists = players.stream().anyMatch(p -> p.getName().getString().equalsIgnoreCase(this.playerName));
         if (exists) RenderUtils.renderTexture(this, context, Identifier.of(TierNametags.MODID, "textures/font/online_status.png"), 267, 52, 29, 28);
