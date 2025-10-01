@@ -1,0 +1,193 @@
+{
+  "providers": [
+  	{
+      "type": "bitmap",
+      "file": "tiernametags:font/gamemodes/sword.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE001"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/gamemodes/diamond_pot.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE002"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/gamemodes/netherite_pot.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE003"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/gamemodes/axe.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE004"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/gamemodes/uhc.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE005"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/gamemodes/smp.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE006"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/gamemodes/crystal.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE007"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/gamemodes/diamond_smp.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE008"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/gamemodes/cart.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE009"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/gamemodes/mace.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE00A"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/unranked.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE00B"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/ht1.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE00E"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/ht2.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE00F"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/ht3.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE010"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/ht4.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE011"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/ht5.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE012"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/lt1.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE013"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/lt2.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE014"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/lt3.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE015"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/lt4.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE016"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/lt5.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE017"
+      ]
+    }
+  ]
+}
