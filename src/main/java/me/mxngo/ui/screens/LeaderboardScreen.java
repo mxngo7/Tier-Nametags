@@ -10,6 +10,7 @@ import me.mxngo.ocetiers.TieredPlayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -176,15 +177,19 @@ public class LeaderboardScreen extends Screen {
 	}
 	
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+	public boolean mouseClicked(Click click, boolean doubled) {
+		int button = click.button();
+		
 		if (button == GLFW.GLFW_MOUSE_BUTTON_1) this.mouseDown = true;
-		return super.mouseClicked(mouseX, mouseY, button);
+		return super.mouseClicked(click, doubled);
 	}
 	
 	@Override
-	public boolean mouseReleased(double mouseX, double mouseY, int button) {
+	public boolean mouseReleased(Click click) {
+		int button = click.button();
+		
 		if (button == GLFW.GLFW_MOUSE_BUTTON_1) this.mouseDown = false;
-		return super.mouseReleased(mouseX, mouseY, button);
+		return super.mouseReleased(click);
 	}
 	
 	@Override

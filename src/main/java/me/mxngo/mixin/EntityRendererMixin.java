@@ -30,7 +30,7 @@ public class EntityRendererMixin<T extends Entity, S extends EntityRenderState> 
 		
 		AbstractClientPlayerEntity playerEntity = (AbstractClientPlayerEntity) entity;
 		GameProfile profile = playerEntity.getGameProfile();
-		String name = profile.getName();
+		String name = profile.name();
 		
 		MutableText displayName = (MutableText) state.displayName;
 		if (displayName == null) displayName = Text.literal(name);
