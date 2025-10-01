@@ -12,12 +12,12 @@ import org.lwjgl.glfw.GLFW;
 
 import com.mojang.authlib.GameProfile;
 
-import me.mxngo.SkinCache;
 import me.mxngo.TierNametags;
 import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.mixin.IMinecraftClientAccessor;
 import me.mxngo.mixin.IPlayerSkinWidgetAccessor;
 import me.mxngo.ocetiers.Gamemode;
+import me.mxngo.ocetiers.SkinCache;
 import me.mxngo.ui.util.RenderUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -176,8 +176,6 @@ public class ProfileScreen extends Screen {
     }
     
     private void renderPlayerEntity(DrawContext context, int mouseX, int mouseY) {
-    	if (this.width <= 500 || this.height <= 300) return;
-   	 
 		float theta = (float) -Math.toDegrees((float) Math.atan2(mouseX - this.width / 8, this.height / 2));
 		playerEntity.setHeadYaw(theta);
 		playerEntity.setBodyYaw(theta / 3.5f);
@@ -189,10 +187,10 @@ public class ProfileScreen extends Screen {
 		}
 		playerEntity.setPitch(theta / 2);
 		
-		float scale = 150.0f;
+		float scale = RenderUtils.getScaled(150f, RenderUtils.iY, this.height);
 		
 		Quaternionf quaternion = new Quaternionf().rotateAxis((float) Math.toRadians(180), new Vector3f(1, 0, 0));
-		InventoryScreen.drawEntity(context, 0, 0, this.width / 4, this.height, scale, new Vector3f(0, 1f, 0), quaternion, null, playerEntity);
+		InventoryScreen.drawEntity(context, 0, 0, RenderUtils.getScaled(RenderUtils.iX / 4, RenderUtils.iX, this.width), RenderUtils.getScaled(RenderUtils.iY, RenderUtils.iY, this.height), scale, new Vector3f(0, 1f, 0), quaternion, null, playerEntity);
     }
 
     @Override
@@ -249,7 +247,7 @@ public class ProfileScreen extends Screen {
         	} else deltaSinceLastAnimationPause += delta;
         }
         
-//        List<AbstractClientPlayerEntity> players = mc.world.getPlayers();
+        List<AbstractClientPlayerEntity> players = mc.world.getPlayers();
         
 //        AbstractClientPlayerEntity player = new AbstractClientPlayerEntity(mc.world, new GameProfile(UUID.randomUUID(), playerName)) {
 //         	public SkinTextures getSkinTextures() {
@@ -264,20 +262,9 @@ public class ProfileScreen extends Screen {
         
 //        if (!(this.isMouseDown() && this.widget.isHovered())) accessor.setHorizontalRotation(accessor.getHorizontalRotation() + 0.02f);
         
-//        boolean exists = players.stream().anyMatch(p -> p.getName().getString().equalsIgnoreCase(this.playerName));
-//        if (exists) {
-//        	RenderUtils.fill(this, context, 267, 58, 282, 72, 0xff7ded64);
-//        	RenderUtils.renderBorder(this, context, 267, 58, 15, 14, 0xFFFFFFFF);
-//        	
-//        	Optional<AbstractClientPlayerEntity> abstractPlayer = players.stream().filter(p -> p.getName().getString().equalsIgnoreCase(this.playerName)).findFirst();
-//        	if (abstractPlayer.isEmpty()) return;
-//        	
-//        	PlayerEntity playerEntity = (PlayerEntity) abstractPlayer.get();
-//        	player = new AbstractClientPlayerEntity(mc.world, playerEntity.getGameProfile()) {};
-//        } else {
-//        	RenderUtils.fill(this, context, 267, 58, 282, 72, 0xff949494);
-//        	RenderUtils.renderBorder(this, context, 267, 58, 15, 14, 0xFFFFFFFF);
-//        }
+        boolean exists = players.stream().anyMatch(p -> p.getName().getString().equalsIgnoreCase(this.playerName));
+        if (exists) RenderUtils.renderTexture(this, context, Identifier.of(TierNametags.MODID, "textures/font/online_status.png"), 267, 52, 29, 28);
+        else RenderUtils.renderTexture(this, context, Identifier.of(TierNametags.MODID, "textures/font/offline_status.png"), 267, 52, 29, 28);
         
          if (renderWidget && playerSkinWidget != null) {        	 
         	 playerSkinWidget.render(context, mouseX, mouseY, delta);

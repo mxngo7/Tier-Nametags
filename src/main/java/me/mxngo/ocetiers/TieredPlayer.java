@@ -2,6 +2,9 @@ package me.mxngo.ocetiers;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -34,6 +37,11 @@ public record TieredPlayer(@SerializedName("name") String name, @SerializedName(
 	
 	public long getDaysSinceLastUpdate() {
 		return ChronoUnit.DAYS.between(epoch.plusDays(((this.data[1]) >> 48) & 0xFFFF), LocalDate.now());
+	}
+	
+	public Tier getBestTier() {
+		Optional<Tier> tier = List.of(Gamemode.values()).stream().map(this::getTier).sorted(Comparator.comparingInt(Tier::getTierValue).reversed()).findFirst();
+		return tier.isPresent() ? tier.get() : Tier.NONE;
 	}
 	
 	public ProfileTheme getProfileTheme() {

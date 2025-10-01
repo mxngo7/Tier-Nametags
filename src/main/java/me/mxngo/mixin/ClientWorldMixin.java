@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.mojang.authlib.GameProfile;
 
-import me.mxngo.SkinCache;
+import me.mxngo.ocetiers.SkinCache;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.SkinTextures;
 import net.minecraft.client.world.ClientWorld;

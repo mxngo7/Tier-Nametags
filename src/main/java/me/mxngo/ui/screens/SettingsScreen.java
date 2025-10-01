@@ -22,7 +22,7 @@ public class SettingsScreen extends Screen {
 	private TierNametagsConfig updatedConfig = TierNametags.getInstance().getConfig().copy();
 	private boolean mouseDown = false;
 	
-	public SwitchComponent showOnNametags, displayTierInTablist, displayTierText, tierPosition, reducedMotion;
+	public SwitchComponent showOnNametags, displayTierInTablist, displayTierInChat, displayTierText, tierPosition, reducedMotion;
 	public ModeComponent<Gamemode> tierGamemode;
 	
 	public SettingsScreen() {
@@ -41,6 +41,7 @@ public class SettingsScreen extends Screen {
 		showOnNametags.render(context, mouseX, mouseY, delta);
 		displayTierInTablist.render(context, mouseX, mouseY, delta);
 		displayTierText.render(context, mouseX, mouseY, delta);
+		displayTierInChat.render(context, mouseX, mouseY, delta);
 		tierPosition.render(context, mouseX, mouseY, delta);
 		reducedMotion.render(context, mouseX, mouseY, delta);
 		tierGamemode.render(context, mouseX, mouseY, delta);
@@ -62,10 +63,11 @@ public class SettingsScreen extends Screen {
 		
 		showOnNametags = new SwitchComponent(this, Text.literal("Display On Nametags"), RenderUtils.iX / 2 - 152, 100, 0, a, b, c, d, e, f, g, h, updatedConfig.showOnNametags);
 		displayTierInTablist = new SwitchComponent(this, Text.literal("Display In Tablist"), RenderUtils.iX / 2 - 152, 114, 1, a, b, c, d, e, f, g, h, updatedConfig.showOnTablist);
-		displayTierText = new SwitchComponent(this, Text.literal("Display Tier Text"), RenderUtils.iX / 2 - 152, 128, 0, a, b, c, d, e, f, g, h, updatedConfig.showTierText);
-		tierPosition = new SwitchComponent(this, Text.literal("Tier Position: " + updatedConfig.tierPosition.toString().toLowerCase()), RenderUtils.iX / 2 - 152, 142, 0, a, b, c, d, e, f, g, h, updatedConfig.tierPosition == TierPosition.RIGHT);
-		reducedMotion = new SwitchComponent(this, Text.literal("Reduced Motion"), RenderUtils.iX / 2 - 152, 200, 0, a, b, c, d, e, f, g, h, updatedConfig.reduceMotion);
-		tierGamemode = new ModeComponent<Gamemode>(this, List.of(Gamemode.values()), updatedConfig.tierGamemode, Gamemode::getName, Gamemode::getStyledIcon, RenderUtils.iX / 2 - 152, 156);
+		displayTierInChat = new SwitchComponent(this, Text.literal("Display In Chat"), RenderUtils.iX / 2 - 152, 128, 0, a, b, c, d, e, f, g, h, updatedConfig.showInChat);
+		displayTierText = new SwitchComponent(this, Text.literal("Display Tier Text"), RenderUtils.iX / 2 - 152, 142, 0, a, b, c, d, e, f, g, h, updatedConfig.showTierText);
+		tierPosition = new SwitchComponent(this, Text.literal("Tier Position: " + updatedConfig.tierPosition.toString().toLowerCase()), RenderUtils.iX / 2 - 152, 156, 0, a, b, c, d, e, f, g, h, updatedConfig.tierPosition == TierPosition.RIGHT);
+		reducedMotion = new SwitchComponent(this, Text.literal("Reduced Motion"), RenderUtils.iX / 2 - 152, 220, 0, a, b, c, d, e, f, g, h, updatedConfig.reduceMotion);
+		tierGamemode = new ModeComponent<Gamemode>(this, List.of(Gamemode.values()), updatedConfig.tierGamemode, Gamemode::getName, Gamemode::getStyledIcon, RenderUtils.iX / 2 - 152, 170);
 	}
 	
 	@Override
@@ -74,6 +76,7 @@ public class SettingsScreen extends Screen {
 		
 		updatedConfig.showOnNametags = showOnNametags.isToggled();
 		updatedConfig.showOnTablist = displayTierInTablist.isToggled();
+		updatedConfig.showInChat = displayTierInChat.isToggled();
 		updatedConfig.showTierText = displayTierText.isToggled();
 		updatedConfig.reduceMotion = reducedMotion.isToggled();
 		
@@ -98,6 +101,7 @@ public class SettingsScreen extends Screen {
 		showOnNametags.mouseClicked(mouseX, mouseY, button);
 		displayTierInTablist.mouseClicked(mouseX, mouseY, button);
 		displayTierText.mouseClicked(mouseX, mouseY, button);
+		displayTierInChat.mouseClicked(mouseX, mouseY, button);
 		tierPosition.mouseClicked(mouseX, mouseY, button);
 		reducedMotion.mouseClicked(mouseX, mouseY, button);
 		tierGamemode.mouseClicked(mouseX, mouseY, button);

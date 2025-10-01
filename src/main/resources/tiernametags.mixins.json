@@ -9,8 +9,10 @@
 		"ScreenMixin",
 		"ClientWorldMixin",
 		"PlayerListHudMixin",
+		"ChatHudMixin",
 		"IPlayerSkinWidgetAccessor",
-		"IMinecraftClientAccessor"
+		"IMinecraftClientAccessor",
+		"IDrawContextAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

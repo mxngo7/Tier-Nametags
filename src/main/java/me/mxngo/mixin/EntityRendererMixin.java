@@ -15,6 +15,7 @@ import net.minecraft.client.render.entity.state.EntityRenderState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 
 @Mixin(EntityRenderer.class)
 public class EntityRendererMixin<T extends Entity, S extends EntityRenderState> {
@@ -31,7 +32,12 @@ public class EntityRendererMixin<T extends Entity, S extends EntityRenderState> 
 		GameProfile profile = playerEntity.getGameProfile();
 		String name = profile.getName();
 		
-		MutableText updatedDisplayName = instance.getDisplayName(name);
-		if (updatedDisplayName != null) state.displayName = updatedDisplayName;
+		MutableText displayName = (MutableText) state.displayName;
+		if (displayName == null) displayName = Text.literal(name);
+		
+		MutableText component = instance.getNametagComponent(name);
+		if (component == null) return;
+		
+		state.displayName = instance.applyTierToDisplayName(name, displayName, component);
 	}
 }

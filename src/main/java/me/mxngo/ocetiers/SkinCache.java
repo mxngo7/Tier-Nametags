@@ -1,10 +1,11 @@
-package me.mxngo;
+package me.mxngo.ocetiers;
 
 import java.util.HashMap;
 import java.util.function.Supplier;
 
 import com.mojang.authlib.GameProfile;
 
+import me.mxngo.TierNametags;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.util.SkinTextures;
@@ -49,8 +50,7 @@ public class SkinCache {
 	private static SkinTextures getDelegateSkinTextures(String name) {
 		GameProfile profile = getProfile(name);
 		
-		if (profile == null)
-			return null; //mc.getSkinProvider().getSkinTextures(new GameProfile(UUID.randomUUID(), name));
+		if (profile == null) return null;
 		else return mc.getSkinProvider().getSkinTextures(profile);
 	}
 	

@@ -4,9 +4,6 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.arg
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 
 import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,7 +15,6 @@ import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
@@ -27,6 +23,8 @@ import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.config.TierPosition;
 import me.mxngo.ocetiers.Gamemode;
 import me.mxngo.ocetiers.Leaderboard;
+import me.mxngo.ocetiers.OceTiersAPIWrapper;
+import me.mxngo.ocetiers.SkinCache;
 import me.mxngo.ocetiers.Tier;
 import me.mxngo.ocetiers.TieredPlayer;
 import me.mxngo.ui.screens.LeaderboardScreen;
@@ -70,19 +68,20 @@ public class TierNametags implements ModInitializer {
 	public void onInitialize() {
 		mc = MinecraftClient.getInstance();
 		
-		BufferedReader reader;
-		Gson gson = new Gson();
-		
-		try {
-			reader = new BufferedReader(new FileReader(null));
-			instance.players = gson.fromJson(reader, TieredPlayer[].class);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		
-		for (TieredPlayer player : instance.players) instance.playerMap.put(player.name(), player);
-		
-		instance.leaderboard = new Leaderboard(instance.getPlayers());
+		OceTiersAPIWrapper.getPlayers().thenAccept(players -> {
+			instance.logger.info("Successfully loaded " + players.length + " player profiles.");
+			
+			instance.players = players;
+			for (TieredPlayer player : players) {				
+				instance.playerMap.put(player.name(), player);
+			}
+			
+			instance.leaderboard = new Leaderboard(players);
+		}).exceptionally(exception -> {
+			instance.logger.error("Failed to load players.");
+			exception.printStackTrace();
+			return null;
+		});
 		
 		instance.cycleGamemodeKeybinding = KeyBindingHelper.registerKeyBinding(
 			new KeyBinding("tiernametags.keybinds.cycle", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "tiernametags.localemodid")
@@ -290,7 +289,7 @@ public class TierNametags implements ModInitializer {
 		return null;
 	}
 	
-	public MutableText getDisplayName(String name) {
+	public MutableText getNametagComponent(String name) {
 		TieredPlayer player = instance.getPlayer(name);
 		if (player == null) return null;
 		
@@ -300,16 +299,46 @@ public class TierNametags implements ModInitializer {
 		
 		TierNametagsConfig config = getConfig();
 		
-		MutableText gamemodeIcon = Text.literal(gamemode.getIcon()).styled(style -> style.withFont(Identifier.of("tiernametags", "icons")));
-		MutableText tierIcon = Text.literal(tier.getIcon()).styled(style -> style.withFont(Identifier.of("tiernametags", "icons")));
+		MutableText gamemodeIcon = Text.literal(gamemode.getIcon()).styled(style -> style.withFont(Identifier.of("tiernametags", "icons")).withColor(0xFFFFFFFF));
+		MutableText tierIcon = Text.literal(tier.getIcon()).styled(style -> style.withFont(Identifier.of("tiernametags", "icons")).withColor(0xFFFFFFFF));
 		MutableText tierText = Text.literal(tier.name()).styled(style -> style.withColor(tier.getLightColour()));
 		
 		if (config.tierPosition == TierPosition.LEFT) {
-			if (config.showTierText) return Text.empty().append(gamemodeIcon).append(tierIcon).append(" ").append(tierText).append(" | " + name);
-			else return Text.empty().append(gamemodeIcon).append(tierIcon).append(" " + name);
+			if (config.showTierText) return Text.empty().append(gamemodeIcon).append(tierIcon).append(" ").append(tierText).append(" |");
+			else return Text.empty().append(gamemodeIcon).append(tierIcon);
 		} else {
-			if (config.showTierText) return Text.empty().append(name).append(" | ").append(tierText).append(" ").append(tierIcon).append(gamemodeIcon);
-			else return Text.empty().append(name).append(" ").append(tierIcon).append(gamemodeIcon);
+			if (config.showTierText) return Text.empty().append("| ").append(tierText).append(" ").append(tierIcon).append(gamemodeIcon);
+			else return tierIcon.append(gamemodeIcon);
+		}
+	}
+	
+	public MutableText applyTierToDisplayName(String name, MutableText displayName, MutableText component) {
+		TierNametagsConfig config = getConfig();
+		
+		String plainText = displayName.getString();
+		int index = plainText.indexOf(name);
+		
+		if (index < 0) {
+			return config.tierPosition == TierPosition.LEFT
+				? Text.empty().append(component).append(" ").append(displayName)
+				: Text.empty().append(displayName).append(" ").append(component);
+		} else {
+			MutableText result = Text.empty();
+			for (Text child : displayName.getWithStyle(displayName.getStyle())) {
+				if (child == null) {
+					continue;
+				}
+				
+				String content = child.getString();
+				
+				if (content.contains(name)) {
+					if (config.tierPosition == TierPosition.LEFT) result.append(component).append(" ").append(child);
+					else result.append(child).append(" ").append(component);
+				} else result.append(child);
+			}
+			
+			if (result == null) return displayName;
+			else return result;
 		}
 	}
 	

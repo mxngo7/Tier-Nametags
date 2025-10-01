@@ -9,6 +9,9 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class RenderUtils {
+//	private static final MinecraftClient mc = MinecraftClient.getInstance();
+//	private static MappableRingBuffer vertexBuffer;
+	
 	public static final int iX = 854;
 	public static final int iY = 480;
 	
@@ -23,6 +26,67 @@ public class RenderUtils {
 	public static double easeOut(double x, int exp) {
 		return 1 - Math.pow(1 - x, exp);
 	}
+	
+//	public static void testFillF(DrawContext context, float x1, float y1, float x2, float y2) {
+//		// fix memory leak lol
+//		
+//		if (x1 < x2) {
+//			float i = x1;
+//			x1 = x2;
+//			x2 = i;
+//		}
+//
+//		if (y1 < y2) {
+//			float i = y1;
+//			y1 = y2;
+//			y2 = i;
+//		}
+//		
+//		RenderPipeline pipeline = RenderPipelines.GUI_TEXTURED;
+//		VertexFormat vertexFormat = VertexFormats.POSITION_COLOR;
+//		
+//		Tessellator tessellator = Tessellator.getInstance();
+//		BufferBuilder buffer = tessellator.begin(DrawMode.TRIANGLE_STRIP, vertexFormat);
+//		
+//		buffer.vertex(context.getMatrices(), x1, y1, 0).color(0xFFFFFFFF);
+//		buffer.vertex(context.getMatrices(), x2, y1, 0).color(0xFFFFFFFF);
+//		buffer.vertex(context.getMatrices(), x2, y2, 0).color(0xFFFFFFFF);
+//		buffer.vertex(context.getMatrices(), x1, y2, 0).color(0xFFFFFFFF);
+//		
+//		BuiltBuffer builtBuffer = buffer.end();
+//		BuiltBuffer.DrawParameters drawParameters = builtBuffer.getDrawParameters();
+//		
+//		int vertexBufferSize = drawParameters.vertexCount() * vertexFormat.getVertexSize();
+//
+//		if (vertexBuffer == null || vertexBuffer.size() < vertexBufferSize) {
+//			vertexBuffer = new MappableRingBuffer(() -> TierNametags.MODID + ".RenderUtils.fill()", GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_MAP_WRITE, vertexBufferSize);
+//		}
+//
+//		CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
+//
+//		try (GpuBuffer.MappedView mappedView = commandEncoder.mapBuffer(vertexBuffer.getBlocking().slice(0, builtBuffer.getBuffer().remaining()), false, true)) {
+//			MemoryUtil.memCopy(builtBuffer.getBuffer(), mappedView.data());
+//		}
+//
+//		GpuBuffer vertices = vertexBuffer.getBlocking();
+//		
+//		GpuBuffer indices = pipeline.getVertexFormat().uploadImmediateIndexBuffer(builtBuffer.getSortedBuffer());
+//		VertexFormat.IndexType indexType = drawParameters.indexType();
+//		
+//		GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().write(RenderSystem.getModelViewMatrix(), new Vector4f(1f, 1f, 1f, 1f), RenderSystem.getModelOffset(), RenderSystem.getTextureMatrix(), 1f);
+//		
+//		try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> TierNametags.MODID + ".RenderUtils.fill()", mc.getFramebuffer().getColorAttachmentView(), OptionalInt.empty(), mc.getFramebuffer().getDepthAttachmentView(), OptionalDouble.empty())) {
+//			renderPass.setPipeline(pipeline);
+//			RenderSystem.bindDefaultUniforms(renderPass);
+//			renderPass.setUniform("DynamicTransforms", dynamicTransforms);
+//			renderPass.setVertexBuffer(0, vertices);
+//			renderPass.setIndexBuffer(indices, indexType);
+//			renderPass.drawIndexed(0, 0, drawParameters.indexCount(), 1);
+//			renderPass.close();
+//		}
+//		
+//		builtBuffer.close();
+//	}
 	
 	public static void enableScissor(Screen screen, DrawContext context, int x1, int y1, int x2, int y2) {
 		context.enableScissor(getScaled(x1, iX, screen.width), getScaled(y1, iY, screen.height), getScaled(x2, iX, screen.width), getScaled(y2, iY, screen.height));

@@ -25,8 +25,12 @@ public class PlayerListHudMixin {
 		
 		GameProfile profile = entry.getProfile();
 		String name = profile.getName();
+		Text displayName = entry.getDisplayName();
+		if (displayName == null) displayName = Text.literal(name);
 		
-		MutableText updatedDisplayName = instance.getDisplayName(name);
-		if (updatedDisplayName != null) info.setReturnValue(updatedDisplayName);
+		MutableText component = instance.getNametagComponent(name);
+		if (component == null) return;
+		
+		info.setReturnValue(instance.applyTierToDisplayName(name, (MutableText) displayName, component));
 	}
 }

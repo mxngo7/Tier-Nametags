@@ -7,6 +7,7 @@ public class TierNametagsConfig {
 	public Gamemode tierGamemode = Gamemode.SWORD;
 	public boolean showOnNametags = true;
 	public boolean showOnTablist = false;
+	public boolean showInChat = false;
 	public boolean showTierText = false;
 	public boolean reduceMotion = false;
 	
@@ -16,6 +17,7 @@ public class TierNametagsConfig {
 		copied.tierGamemode = tierGamemode;
 		copied.showOnNametags = showOnNametags;
 		copied.showOnTablist = showOnTablist;
+		copied.showInChat = showInChat;
 		copied.showTierText = showTierText;
 		copied.reduceMotion = reduceMotion;
 		return copied;

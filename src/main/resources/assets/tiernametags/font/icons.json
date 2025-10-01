@@ -2,7 +2,7 @@
   "providers": [
   	{
       "type": "bitmap",
-      "file": "tiernametags:font/sword.png",
+      "file": "tiernametags:font/gamemodes/sword.png",
       "height": 8,
       "ascent": 7,
       "chars": [
@@ -11,7 +11,7 @@
     },
     {
       "type": "bitmap",
-      "file": "tiernametags:font/diamond_pot.png",
+      "file": "tiernametags:font/gamemodes/diamond_pot.png",
       "height": 8,
       "ascent": 7,
       "chars": [
@@ -20,7 +20,7 @@
     },
     {
       "type": "bitmap",
-      "file": "tiernametags:font/netherite_pot.png",
+      "file": "tiernametags:font/gamemodes/netherite_pot.png",
       "height": 8,
       "ascent": 7,
       "chars": [
@@ -29,7 +29,7 @@
     },
     {
       "type": "bitmap",
-      "file": "tiernametags:font/axe.png",
+      "file": "tiernametags:font/gamemodes/axe.png",
       "height": 8,
       "ascent": 7,
       "chars": [
@@ -38,7 +38,7 @@
     },
     {
       "type": "bitmap",
-      "file": "tiernametags:font/uhc.png",
+      "file": "tiernametags:font/gamemodes/uhc.png",
       "height": 8,
       "ascent": 7,
       "chars": [
@@ -47,7 +47,7 @@
     },
     {
       "type": "bitmap",
-      "file": "tiernametags:font/smp.png",
+      "file": "tiernametags:font/gamemodes/smp.png",
       "height": 8,
       "ascent": 7,
       "chars": [
@@ -56,7 +56,7 @@
     },
     {
       "type": "bitmap",
-      "file": "tiernametags:font/crystal.png",
+      "file": "tiernametags:font/gamemodes/crystal.png",
       "height": 8,
       "ascent": 7,
       "chars": [
@@ -65,7 +65,7 @@
     },
     {
       "type": "bitmap",
-      "file": "tiernametags:font/diamond_smp.png",
+      "file": "tiernametags:font/gamemodes/diamond_smp.png",
       "height": 8,
       "ascent": 7,
       "chars": [
@@ -74,7 +74,7 @@
     },
     {
       "type": "bitmap",
-      "file": "tiernametags:font/cart.png",
+      "file": "tiernametags:font/gamemodes/cart.png",
       "height": 8,
       "ascent": 7,
       "chars": [
@@ -83,7 +83,7 @@
     },
     {
       "type": "bitmap",
-      "file": "tiernametags:font/mace.png",
+      "file": "tiernametags:font/gamemodes/mace.png",
       "height": 8,
       "ascent": 7,
       "chars": [
@@ -92,7 +92,16 @@
     },
     {
       "type": "bitmap",
-      "file": "tiernametags:font/ht1.png",
+      "file": "tiernametags:font/tiers/unranked.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE00B"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/ht1.png",
       "height": 8,
       "ascent": 7,
       "chars": [
@@ -101,7 +110,7 @@
     },
     {
       "type": "bitmap",
-      "file": "tiernametags:font/ht2.png",
+      "file": "tiernametags:font/tiers/ht2.png",
       "height": 8,
       "ascent": 7,
       "chars": [
@@ -110,7 +119,7 @@
     },
     {
       "type": "bitmap",
-      "file": "tiernametags:font/ht3.png",
+      "file": "tiernametags:font/tiers/ht3.png",
       "height": 8,
       "ascent": 7,
       "chars": [
@@ -119,7 +128,7 @@
     },
     {
       "type": "bitmap",
-      "file": "tiernametags:font/ht4.png",
+      "file": "tiernametags:font/tiers/ht4.png",
       "height": 8,
       "ascent": 7,
       "chars": [
@@ -128,11 +137,56 @@
     },
     {
       "type": "bitmap",
-      "file": "tiernametags:font/ht5.png",
+      "file": "tiernametags:font/tiers/ht5.png",
       "height": 8,
       "ascent": 7,
       "chars": [
         "\uE012"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/lt1.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE013"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/lt2.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE014"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/lt3.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE015"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/lt4.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE016"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/lt5.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE017"
       ]
     }
   ]

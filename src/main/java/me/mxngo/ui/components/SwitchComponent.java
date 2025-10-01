@@ -2,6 +2,8 @@ package me.mxngo.ui.components;
 
 import org.lwjgl.glfw.GLFW;
 
+import me.mxngo.TierNametags;
+import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.ui.IComponent;
 import me.mxngo.ui.util.RenderUtils;
 import net.minecraft.client.gui.DrawContext;
@@ -9,10 +11,12 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
 public class SwitchComponent implements IComponent {
+	private TierNametags instance = TierNametags.getInstance();
+	
 	private Screen parent;
 	private Text label;
 	private boolean toggled = false;
-	private float deltaSinceToggled = 0f;
+	private float deltaSinceToggled = 3f;
 	private int u;
 	
 	private int switchOnColour, switchOffColour, handleOnColour, handleOffColour,
@@ -75,6 +79,8 @@ public class SwitchComponent implements IComponent {
 
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+		TierNametagsConfig config = instance.getConfig();
+		
 		RenderUtils.renderScaledText(parent, context, label, x + 27, y + (int) (parent.getTextRenderer().fontHeight / 2) - 3, 0xFFFFFFFF, 1f);
 
 		int switchX = x;
@@ -82,10 +88,11 @@ public class SwitchComponent implements IComponent {
 		int switchWidth = 21;
 		int switchHeight = 11 + u;
 		
-		int handleX = toggled ? 11 : 1;
 		int handleY = 1;
 		int handleWidth = 9;
 		int handleHeight = 9 + u;
+		
+		int handleOffset = config.reduceMotion ? (toggled ? 11 : 1) : (toggled ? 0 : 12) + (toggled ? 1 : -1) * ((int) ((Math.clamp(deltaSinceToggled, 0f, 3f) / 3f) * 11));
 		
 		boolean hovering = RenderUtils.isMouseHovering(parent, mouseX, mouseY, switchX, switchY, switchX + switchWidth, switchY + switchHeight);
 		
@@ -93,7 +100,7 @@ public class SwitchComponent implements IComponent {
 		int handleColour = hovering ? (toggled ? handleOnHoverColour : handleOffHoverColour) : (toggled ? handleOnColour : handleOffColour);
 		
 		RenderUtils.fill(parent, context, switchX, switchY, switchX + switchWidth, switchY + switchHeight, switchColour);
-		RenderUtils.fill(parent, context, switchX + handleX, switchY + handleY, switchX + handleX + handleWidth, switchY + handleY + handleHeight, handleColour);
+		RenderUtils.fill(parent, context, switchX + handleOffset, switchY + handleY, switchX + handleOffset + handleWidth, switchY + handleY + handleHeight, handleColour);
 		
 		deltaSinceToggled += delta;
 	}
