@@ -72,6 +72,11 @@ public class ProfileScreen extends Screen {
          		if (textures != null) return textures;
          		return SkinCache.getUnknownSkinTextures();
          	};
+         	
+         	@Override
+         	public boolean shouldRenderName() {
+         		return false;
+         	}
          };
     }
     
@@ -85,6 +90,11 @@ public class ProfileScreen extends Screen {
          		if (textures != null) return textures;
          		return SkinCache.getUnknownSkinTextures();
          	};
+         	
+         	@Override
+         	public boolean shouldRenderName() {
+         		return false;
+         	}
         };
     }
     
@@ -150,7 +160,7 @@ public class ProfileScreen extends Screen {
     			int x = RenderUtils.getScaled(50, RenderUtils.iX, this.width);
     			int w = RenderUtils.getScaled(150, RenderUtils.iX, this.width);
     			int h = RenderUtils.getScaled(300, RenderUtils.iY, this.height);
-    			playerSkinWidget = new PlayerSkinWidget(w, h, mc.getLoadedEntityModels(), textureSupplier);
+    			playerSkinWidget = new PlayerSkinWidget(w, h, mc.getEntityModelLoader(), textureSupplier);
     			playerSkinWidget.setPosition(x, this.height / 2 - h / 2);
     		}
     	} else fetchSkinTextureSupplier();
@@ -168,7 +178,7 @@ public class ProfileScreen extends Screen {
     			int w = RenderUtils.getScaled(150, RenderUtils.iX, this.width);
     			int h = RenderUtils.getScaled(300, RenderUtils.iY, this.height);
     			
-    			playerSkinWidget = new PlayerSkinWidget(w, h, mc.getLoadedEntityModels(), skinTextureSupplier);
+    			playerSkinWidget = new PlayerSkinWidget(w, h, mc.getEntityModelLoader(), skinTextureSupplier);
     			playerSkinWidget.setPosition(x, this.height / 2 - h / 2);
     		});
     		
@@ -192,7 +202,6 @@ public class ProfileScreen extends Screen {
 		
 		Quaternionf quaternion = new Quaternionf().rotateAxis((float) Math.toRadians(180), new Vector3f(1, 0, 0));
 		InventoryScreen.drawEntity(context, 0, 0, scale, new Vector3f(0.75f, 2.5f, 0f), quaternion, null, playerEntity);
-		
     }
 
     @Override

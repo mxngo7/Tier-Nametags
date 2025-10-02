@@ -25,8 +25,14 @@ public class EntityRendererMixin<T extends Entity, S extends EntityRenderState> 
 	public void updateRenderState(T entity, S state, float d, CallbackInfo info) {
 		TierNametagsConfig config = instance.getConfig();
 		
+		if (entity instanceof AbstractClientPlayerEntity && !entity.shouldRenderName()) {
+			state.displayName = Text.empty();
+			return;
+		}
+		
 		if (!config.showOnNametags) return;
 		if (!(entity instanceof PlayerEntity)) return;
+		
 		
 		AbstractClientPlayerEntity playerEntity = (AbstractClientPlayerEntity) entity;
 		GameProfile profile = playerEntity.getGameProfile();
