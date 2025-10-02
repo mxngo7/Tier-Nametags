@@ -23,6 +23,7 @@ import me.mxngo.ui.util.RenderUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
@@ -34,7 +35,7 @@ import net.minecraft.util.ApiServices;
 import net.minecraft.util.Identifier;
 
 @Environment(EnvType.CLIENT)
-public class ProfileScreen extends Screen {
+public class ProfileScreen extends Screen implements ITierNametagsScreen {
 	public static boolean renderWidget = true;
 	
 	public MinecraftClient mc = MinecraftClient.getInstance();
@@ -56,7 +57,7 @@ public class ProfileScreen extends Screen {
 	
 	private float deltaSinceLastRenderModeToggle = 5.0f;
 	private float deltaSinceLastSkinRefresh = 60.0f;
-	private float deltaSinceLastAnimationPause = 5.0f;
+//	private float deltaSinceLastAnimationPause = 5.0f;
 	private float animationDelta = 0.0f;
 	
     public ProfileScreen(String playerName, boolean showLeaderboardButton, Gamemode leaderboardGamemode, double leaderboardScroll, String leaderboardSearchQuery) {
@@ -129,6 +130,10 @@ public class ProfileScreen extends Screen {
     public float getAnimationDelta() {
     	return this.animationDelta;
     }
+    
+    public TextRenderer getTextRenderer() {
+		return this.textRenderer;
+	}
     
     private void fetchSkinTextureSupplier() {
     	ApiServices services = ApiServices.create(((IMinecraftClientAccessor) mc).getAuthenticationService(), mc.runDirectory);
@@ -243,20 +248,20 @@ public class ProfileScreen extends Screen {
         	fetchSkinTextureSupplier();
         } else deltaSinceLastSkinRefresh += delta;
         
-        if (!renderWidget) {
-        	int pauseButtonAnimationDistanceProgress = distanceToMove - (int) (RenderUtils.easeOut((double) Math.clamp(animationDelta - 15, 0, deltaUntilAnimationComplete) / deltaUntilAnimationComplete, 4) * distanceToMove);
-        	int pauseButtonOffset = config.reduceMotion ? 0 : -pauseButtonAnimationDistanceProgress;
-        	
-        	boolean hoveringPauseAnimationButton = RenderUtils.isMouseHovering(this, mouseX, mouseY, xOffset + 44, 10 + pauseButtonOffset, xOffset + 64, 30 + pauseButtonOffset);
-        	
-        	RenderUtils.fill(this, context, xOffset + 44, 10 + pauseButtonOffset, xOffset + 64, 30 + pauseButtonOffset, hoveringPauseAnimationButton ? 0x60000000 : 0x80000000);
-        	RenderUtils.renderTexture(this, context, Identifier.of(TierNametags.MODID, "textures/font/" + (playerAnimationPaused ? "play" : "pause") + ".png"), xOffset + 46, 12 + pauseButtonOffset, 16, 16);
-        	
-        	if (mouseDown && hoveringPauseAnimationButton && deltaSinceLastAnimationPause > 5.0f) {
-        		playerAnimationPaused = !playerAnimationPaused;
-        		deltaSinceLastAnimationPause = 0.0f;
-        	} else deltaSinceLastAnimationPause += delta;
-        }
+//        if (!renderWidget) {
+//        	int pauseButtonAnimationDistanceProgress = distanceToMove - (int) (RenderUtils.easeOut((double) Math.clamp(animationDelta - 15, 0, deltaUntilAnimationComplete) / deltaUntilAnimationComplete, 4) * distanceToMove);
+//        	int pauseButtonOffset = config.reduceMotion ? 0 : -pauseButtonAnimationDistanceProgress;
+//        	
+//        	boolean hoveringPauseAnimationButton = RenderUtils.isMouseHovering(this, mouseX, mouseY, xOffset + 44, 10 + pauseButtonOffset, xOffset + 64, 30 + pauseButtonOffset);
+//        	
+//        	RenderUtils.fill(this, context, xOffset + 44, 10 + pauseButtonOffset, xOffset + 64, 30 + pauseButtonOffset, hoveringPauseAnimationButton ? 0x60000000 : 0x80000000);
+//        	RenderUtils.renderTexture(this, context, Identifier.of(TierNametags.MODID, "textures/font/" + (playerAnimationPaused ? "play" : "pause") + ".png"), xOffset + 46, 12 + pauseButtonOffset, 16, 16);
+//        	
+//        	if (mouseDown && hoveringPauseAnimationButton && deltaSinceLastAnimationPause > 5.0f) {
+//        		playerAnimationPaused = !playerAnimationPaused;
+//        		deltaSinceLastAnimationPause = 0.0f;
+//        	} else deltaSinceLastAnimationPause += delta;
+//        }
         
         List<AbstractClientPlayerEntity> players = mc.world.getPlayers();
         

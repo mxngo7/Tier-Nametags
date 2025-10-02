@@ -33,7 +33,7 @@ public class ScreenMixin {
 	private TierNametags instance = TierNametags.getInstance();
 	
 	private void renderProfileScreen(ProfileScreen screen, DrawContext context, int mouseX, int mouseY, float delta) {
-		if (!screen.isPlayerAnimationPaused()) screen.playerEntity.limbAnimator.updateLimbs(0.35f, 1.0f, 0.035f);
+//		if (!screen.isPlayerAnimationPaused()) screen.playerEntity.limbAnimator.updateLimbs(0.35f, 1.0f, 0.035f);
 		
 		TierNametagsConfig config = instance.getConfig();
 		Leaderboard leaderboard = instance.getLeaderboard();

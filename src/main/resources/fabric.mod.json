@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "tiernametags",
 	"version": "${version}",
-	"name": "TierNametags",
+	"name": "Tier Nametags",
 	"description": "Provides OceTiers information in player nametags.",
 	"authors": [
 		"mxngo",
@@ -21,7 +21,7 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.17.2",
-		"minecraft": "~1.21.2",
+		"minecraft": "~1.21.1",
 		"java": ">=21",
 		"fabric-api": "*"
 	}

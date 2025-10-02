@@ -10,12 +10,13 @@ import me.mxngo.ocetiers.TieredPlayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
 @Environment(EnvType.CLIENT)
-public class LeaderboardScreen extends Screen {
+public class LeaderboardScreen extends Screen implements ITierNametagsScreen {
 	private TierNametags instance = TierNametags.getInstance();
 	public MinecraftClient mc = MinecraftClient.getInstance();
 	
@@ -87,6 +88,10 @@ public class LeaderboardScreen extends Screen {
 	
 	public String getPlayerToFind() {
 		return this.playerToFind;
+	}
+	
+	public TextRenderer getTextRenderer() {
+		return this.textRenderer;
 	}
 	
 	public void setSelectedTab(int tab) {

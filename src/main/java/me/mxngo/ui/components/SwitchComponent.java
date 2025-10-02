@@ -5,15 +5,16 @@ import org.lwjgl.glfw.GLFW;
 import me.mxngo.TierNametags;
 import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.ui.IComponent;
+import me.mxngo.ui.screens.ITierNametagsScreen;
 import me.mxngo.ui.util.RenderUtils;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
-public class SwitchComponent implements IComponent {
+public class SwitchComponent<S extends Screen & ITierNametagsScreen> implements IComponent {
 	private TierNametags instance = TierNametags.getInstance();
 	
-	private Screen parent;
+	private S parent;
 	private Text label;
 	private boolean toggled = false;
 	private float deltaSinceToggled = 3f;
@@ -24,7 +25,7 @@ public class SwitchComponent implements IComponent {
 	
 	public int x, y;
 	
-	public SwitchComponent(Screen parent, Text label, int x, int y, int u, int switchOnColour, int switchOffColour, int handleOnColour, int handleOffColour,
+	public SwitchComponent(S parent, Text label, int x, int y, int u, int switchOnColour, int switchOffColour, int handleOnColour, int handleOffColour,
 																		   int switchOnHoverColour, int switchOffHoverColour, int handleOnHoverColour, int handleOffHoverColour
 	) {
 		this.parent = parent;
@@ -44,7 +45,7 @@ public class SwitchComponent implements IComponent {
 		this.handleOffHoverColour = handleOffHoverColour;
 	}
 	
-	public SwitchComponent(Screen parent, Text label, int x, int y, int u, int switchOnColour, int switchOffColour, int handleOnColour, int handleOffColour, 
+	public SwitchComponent(S parent, Text label, int x, int y, int u, int switchOnColour, int switchOffColour, int handleOnColour, int handleOffColour, 
 			   							int switchOnHoverColour, int switchOffHoverColour, int handleOnHoverColour, int handleOffHoverColour, boolean toggled
 	) {
 		this.parent = parent;
