@@ -190,7 +190,7 @@ public class ProfileScreen extends Screen {
 		float scale = RenderUtils.getScaled(150f, RenderUtils.iY, this.height);
 		
 		Quaternionf quaternion = new Quaternionf().rotateAxis((float) Math.toRadians(180), new Vector3f(1, 0, 0));
-		InventoryScreen.drawEntity(context, 0, 0, scale, new Vector3f(0, 1f, 0f), quaternion, null, playerEntity);
+		InventoryScreen.drawEntity(context, 0, 0, scale, new Vector3f(0.75f, 2.5f, 0f), quaternion, null, playerEntity);
 		
     }
 
