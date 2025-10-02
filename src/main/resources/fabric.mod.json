@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "tiernametags",
 	"version": "${version}",
-	"name": "TierNametags",
+	"name": "Tier Nametags",
 	"description": "Provides OceTiers information in player nametags.",
 	"authors": [
 		"mxngo",
