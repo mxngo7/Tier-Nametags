@@ -22,7 +22,7 @@ public class ChatHudMixin {
 		if (mc.world == null) return message;
 		
 		for (PlayerListEntry player : mc.getNetworkHandler().getPlayerList()) {
-			String name = player.getProfile().getName();
+			String name = player.getProfile().name();
 			if (!message.getString().toLowerCase().contains(name.toLowerCase())) continue;
 			
 			MutableText result = Text.empty();

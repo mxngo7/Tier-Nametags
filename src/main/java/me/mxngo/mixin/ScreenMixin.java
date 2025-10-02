@@ -24,7 +24,7 @@ import me.mxngo.ui.util.RenderUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.SkinTextures;
+import net.minecraft.entity.player.SkinTextures;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -256,7 +256,7 @@ public class ScreenMixin {
 	    Text findMeText = Text.literal("Go To Me");
 	    RenderUtils.renderScaledText(screen, context, findMeText, cardXOffset + cardWidth - findMeButtonWidth / 2 - screen.getTextRenderer().getWidth(findMeText) / 2, (int) (10 + cardHeight / 2 - screen.getTextRenderer().fontHeight / 2 - scrollOffset) + findMeAnimationOffset, 0xFFFFFFFF, 1.0f);
 	    
-	    String name = screen.mc.player.getGameProfile().getName();
+	    String name = screen.mc.player.getGameProfile().name();
 	    
     	if (!screen.getPlayerToFind().isEmpty()) {
 	    	for (int i = 0; i < players.size(); i++) {
@@ -389,7 +389,7 @@ public class ScreenMixin {
 	    	RenderUtils.renderScaledTextWithGradient(screen, context, playerNameText, cardXOffset + rankingWidth + animationOffset + 40, y + cardHeight / 2 - screen.getTextRenderer().fontHeight / 2, playerNameStartColour, playerNameStopColour, 1.0f);
 	    	
 	    	SkinTextures skinTextures = SkinCache.getPlayer(player.name());
-	    	if (skinTextures != null) RenderUtils.renderTexture(screen, context, skinTextures.texture(), cardXOffset + cardWidth + animationOffset - 27, y + cardHeight / 2 - 12, 24, 24, 24, 24, 192, 192);
+	    	if (skinTextures != null) RenderUtils.renderTexture(screen, context, skinTextures.body().texturePath(), cardXOffset + cardWidth + animationOffset - 27, y + cardHeight / 2 - 12, 24, 24, 24, 24, 192, 192);
 	    	else RenderUtils.fill(screen, context, cardXOffset + cardWidth + animationOffset - 27, y + cardHeight / 2 - 12, cardXOffset + cardWidth + animationOffset - 3, y + cardHeight / 2 + 12, 0x0AFFFFFF);
 	    	
 	    	if (shouldAnimate) context.disableScissor();

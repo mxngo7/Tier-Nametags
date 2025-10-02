@@ -11,10 +11,10 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.yggdrasil.response.NameAndId;
 
 import me.mxngo.TierNametags;
 import me.mxngo.config.TierNametagsConfig;
-import me.mxngo.mixin.IMinecraftClientAccessor;
 import me.mxngo.mixin.IPlayerSkinWidgetAccessor;
 import me.mxngo.ocetiers.Gamemode;
 import me.mxngo.ocetiers.SkinCache;
@@ -22,12 +22,13 @@ import me.mxngo.ui.util.RenderUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.widget.PlayerSkinWidget;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.util.SkinTextures;
+import net.minecraft.entity.player.SkinTextures;
 import net.minecraft.text.Text;
 import net.minecraft.util.ApiServices;
 import net.minecraft.util.Identifier;
@@ -66,7 +67,8 @@ public class ProfileScreen extends Screen {
         this.leaderboardScroll = leaderboardScroll;
         this.leaderboardSearchQuery = leaderboardSearchQuery;
         this.playerEntity = new AbstractClientPlayerEntity(mc.world, new GameProfile(UUID.randomUUID(), playerName)) {
-         	public SkinTextures getSkinTextures() {
+        	@Override
+         	public SkinTextures getSkin() {
          		SkinTextures textures = SkinCache.getPlayer(playerName);
          		if (textures != null) return textures;
          		return SkinCache.getUnknownSkinTextures();
@@ -79,7 +81,8 @@ public class ProfileScreen extends Screen {
         this.playerName = playerName;
         this.showLeaderboardButton = false;
         this.playerEntity = new AbstractClientPlayerEntity(mc.world, new GameProfile(UUID.randomUUID(), playerName)) {
-         	public SkinTextures getSkinTextures() {
+         	@Override
+        	public SkinTextures getSkin() {
          		SkinTextures textures = SkinCache.getPlayer(playerName);
          		if (textures != null) return textures;
          		return SkinCache.getUnknownSkinTextures();
@@ -120,14 +123,14 @@ public class ProfileScreen extends Screen {
     }
     
     private void fetchSkinTextureSupplier() {
-    	ApiServices services = ApiServices.create(((IMinecraftClientAccessor) mc).getAuthenticationService(), mc.runDirectory);
+    	ApiServices services = mc.getApiServices();
     	
     	CompletableFuture<GameProfile> playerGameProfile = CompletableFuture.supplyAsync(() -> {
     		GameProfile profile;
     		
-			Optional<GameProfile> profileQuery = services.profileRepository().findProfileByName(playerName);
+			Optional<NameAndId> profileQuery = services.profileRepository().findProfileByName(playerName);
 			if (profileQuery.isPresent()) {
-				profile = services.sessionService().fetchProfile(profileQuery.get().getId(), true).profile();
+				profile = services.sessionService().fetchProfile(profileQuery.get().id(), true).profile();
 				SkinCache.cacheProfile(profile);
 				shouldCache = true;
 			} else profile = new GameProfile(UUID.randomUUID(), playerName);
@@ -135,7 +138,7 @@ public class ProfileScreen extends Screen {
     		return profile;
     	});
     	
-    	this.skinTextureSupplier = playerGameProfile.thenApplyAsync(profile -> mc.getSkinProvider().getSkinTexturesSupplier(profile), mc);
+    	this.skinTextureSupplier = playerGameProfile.thenApplyAsync(profile -> mc.getSkinProvider().supplySkinTextures(profile, true), mc);
     }
     
     @Override
@@ -298,29 +301,33 @@ public class ProfileScreen extends Screen {
     }
     
     @Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+	public boolean mouseClicked(Click click, boolean doubled) {
+    	int button = click.button();
+    	
     	if (playerSkinWidget != null && playerSkinWidget.isHovered())
-    		playerSkinWidget.mouseClicked(mouseX, mouseY, button);
+    		playerSkinWidget.mouseClicked(click, doubled);
     	
 		if (button == GLFW.GLFW_MOUSE_BUTTON_1) this.mouseDown = true;
-		return super.mouseClicked(mouseX, mouseY, button);
+		return super.mouseClicked(click, doubled);
 	}
 	
 	@Override
-	public boolean mouseReleased(double mouseX, double mouseY, int button) {
+	public boolean mouseReleased(Click click) {
+		int button = click.button();
+		
 		if (playerSkinWidget != null)
-    		playerSkinWidget.mouseReleased(mouseX, mouseY, button);
+    		playerSkinWidget.mouseReleased(click);
 		
 		if (button == GLFW.GLFW_MOUSE_BUTTON_1) this.mouseDown = false;
-		return super.mouseReleased(mouseX, mouseY, button);
+		return super.mouseReleased(click);
 	}
 	
 	@Override
-	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+	public boolean mouseDragged(Click click, double offsetX, double offsetY) {
 		if (playerSkinWidget != null && playerSkinWidget.isHovered())
-    		playerSkinWidget.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    		playerSkinWidget.mouseDragged(click, offsetX, offsetY);
 		
-		return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+		return super.mouseDragged(click, offsetX, offsetY);
 	}
 	
 	public enum PlayerProfileRenderMode {

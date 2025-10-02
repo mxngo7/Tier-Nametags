@@ -13,6 +13,7 @@ import me.mxngo.ui.components.SwitchComponent;
 import me.mxngo.ui.util.RenderUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -97,7 +98,11 @@ public class SettingsScreen extends Screen {
 	}
 	
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+	public boolean mouseClicked(Click click, boolean doubled) {
+		double mouseX = click.x();
+		double mouseY = click.y();
+		int button = click.button();
+		
 		showOnNametags.mouseClicked(mouseX, mouseY, button);
 		displayTierInTablist.mouseClicked(mouseX, mouseY, button);
 		displayTierText.mouseClicked(mouseX, mouseY, button);
@@ -108,13 +113,15 @@ public class SettingsScreen extends Screen {
 		
 		if (button == GLFW.GLFW_MOUSE_BUTTON_1) mouseDown = true;
 		
-		return super.mouseClicked(mouseX, mouseY, button);
+		return super.mouseClicked(click, doubled);
 	}
 	
 	@Override
-	public boolean mouseReleased(double mouseX, double mouseY, int button) {
+	public boolean mouseReleased(Click click) {
+		int button = click.button();
+		
 		if (button == GLFW.GLFW_MOUSE_BUTTON_1) mouseDown = false;
 		
-		return super.mouseReleased(mouseX, mouseY, button);
+		return super.mouseReleased(click);
 	}
 }

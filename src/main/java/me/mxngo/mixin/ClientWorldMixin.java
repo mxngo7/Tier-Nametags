@@ -11,10 +11,10 @@ import com.mojang.authlib.GameProfile;
 
 import me.mxngo.ocetiers.SkinCache;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.SkinTextures;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.SkinTextures;
 
 @Mixin(ClientWorld.class)
 public class ClientWorldMixin {
@@ -26,8 +26,8 @@ public class ClientWorldMixin {
 			PlayerEntity player = (PlayerEntity) entity;
 			GameProfile profile = player.getGameProfile();
 			
-			Supplier<SkinTextures> textureSupplier = mc.getSkinProvider().getSkinTexturesSupplier(profile);
-			SkinCache.cachePlayer(profile.getName(), textureSupplier);
+			Supplier<SkinTextures> textureSupplier = mc.getSkinProvider().supplySkinTextures(profile, true);
+			SkinCache.cachePlayer(profile.name(), textureSupplier);
 		}
 	}
 }

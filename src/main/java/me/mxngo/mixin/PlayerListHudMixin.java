@@ -24,7 +24,7 @@ public class PlayerListHudMixin {
 		if (!config.showOnTablist) return;
 		
 		GameProfile profile = entry.getProfile();
-		String name = profile.getName();
+		String name = profile.name();
 		Text displayName = entry.getDisplayName();
 		if (displayName == null) displayName = Text.literal(name);
 		

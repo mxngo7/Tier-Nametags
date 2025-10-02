@@ -38,8 +38,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.client.util.SkinTextures;
+import net.minecraft.entity.player.SkinTextures;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.StyleSpriteSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
@@ -52,6 +53,8 @@ public class TierNametags implements ModInitializer {
 	private final Logger logger = LoggerFactory.getLogger(MODID);
 	
 	private static MinecraftClient mc;
+	
+	private final StyleSpriteSource.Font gamemodeIconsSpriteSource = new StyleSpriteSource.Font(Identifier.of(TierNametags.MODID, "icons"));
 	
 	private TieredPlayer[] players = {};
 	private HashMap<String, TieredPlayer> playerMap = new HashMap<>();
@@ -83,20 +86,22 @@ public class TierNametags implements ModInitializer {
 			return null;
 		});
 		
+		KeyBinding.Category keyBindingCategory = new KeyBinding.Category(Identifier.of("tiernametags.localemodid"));
+		
 		instance.cycleGamemodeKeybinding = KeyBindingHelper.registerKeyBinding(
-			new KeyBinding("tiernametags.keybinds.cycle", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "tiernametags.localemodid")
+			new KeyBinding("tiernametags.keybinds.cycle", GLFW.GLFW_KEY_UNKNOWN, keyBindingCategory)
 		);
 		
 		instance.cycleGamemodeBackwardsKeybinding = KeyBindingHelper.registerKeyBinding(
-			new KeyBinding("tiernametags.keybinds.cyclebackwards", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "tiernametags.localemodid")
+			new KeyBinding("tiernametags.keybinds.cyclebackwards", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, keyBindingCategory)
 		);
 		
 		instance.leaderboardKeybinding = KeyBindingHelper.registerKeyBinding(
-			new KeyBinding("tiernametags.keybinds.leaderboard", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "tiernametags.localemodid")
+			new KeyBinding("tiernametags.keybinds.leaderboard", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, keyBindingCategory)
 		);
 		
 		instance.settingsKeybinding = KeyBindingHelper.registerKeyBinding(
-			new KeyBinding("tiernametags.keybinds.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "tiernametags.localemodid")
+			new KeyBinding("tiernametags.keybinds.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, keyBindingCategory)
 		);
 		
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
@@ -211,7 +216,7 @@ public class TierNametags implements ModInitializer {
                 							return 1;
                 						}
                 						
-                						source.sendFeedback(getTierNametagsChatLabel().append(" " + player.name() + "'s " + gamemode.getName() + " tier is ").append(Text.literal(tier.name() + " ").styled(style -> style.withColor(tier.getLightColour()))).append(Text.literal(tier.getIcon()).styled(style -> style.withFont(Identifier.of("tiernametags", "icons")))));
+                						source.sendFeedback(getTierNametagsChatLabel().append(" " + player.name() + "'s " + gamemode.getName() + " tier is ").append(Text.literal(tier.name() + " ").styled(style -> style.withColor(tier.getLightColour()))).append(Text.literal(tier.getIcon()).styled(style -> style.withFont(gamemodeIconsSpriteSource))));
                 						
                 						return 1;
                 					})
@@ -299,8 +304,8 @@ public class TierNametags implements ModInitializer {
 		
 		TierNametagsConfig config = getConfig();
 		
-		MutableText gamemodeIcon = Text.literal(gamemode.getIcon()).styled(style -> style.withFont(Identifier.of("tiernametags", "icons")).withColor(0xFFFFFFFF));
-		MutableText tierIcon = Text.literal(tier.getIcon()).styled(style -> style.withFont(Identifier.of("tiernametags", "icons")).withColor(0xFFFFFFFF));
+		MutableText gamemodeIcon = Text.literal(gamemode.getIcon()).styled(style -> style.withFont(gamemodeIconsSpriteSource).withColor(0xFFFFFFFF));
+		MutableText tierIcon = Text.literal(tier.getIcon()).styled(style -> style.withFont(gamemodeIconsSpriteSource).withColor(0xFFFFFFFF));
 		MutableText tierText = Text.literal(tier.name()).styled(style -> style.withColor(tier.getLightColour()));
 		
 		if (config.tierPosition == TierPosition.LEFT) {
@@ -392,7 +397,7 @@ public class TierNametags implements ModInitializer {
 	
 	private MutableText getCycledGamemodeChatMessage() {
 		TierNametagsConfig config = getConfig();
-		return Text.literal("Cycled gamemode to " + config.tierGamemode.getName()).append(" ").append(Text.literal(config.tierGamemode.getIcon()).styled(style -> style.withFont(Identifier.of("tiernametags", "icons"))));
+		return Text.literal("Cycled gamemode to " + config.tierGamemode.getName()).append(" ").append(Text.literal(config.tierGamemode.getIcon()).styled(style -> style.withFont(gamemodeIconsSpriteSource)));
 	}
 	
 	public void addUncachedTextureSupplier(String playerName, CompletableFuture<Supplier<SkinTextures>> textureSupplier) {
