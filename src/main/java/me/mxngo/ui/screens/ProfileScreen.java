@@ -16,6 +16,7 @@ import me.mxngo.TierNametags;
 import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.mixin.IMinecraftClientAccessor;
 import me.mxngo.mixin.IPlayerSkinWidgetAccessor;
+import me.mxngo.mixin.IUserCacheInvoker;
 import me.mxngo.ocetiers.Gamemode;
 import me.mxngo.ocetiers.SkinCache;
 import me.mxngo.ui.util.RenderUtils;
@@ -125,7 +126,7 @@ public class ProfileScreen extends Screen {
     	CompletableFuture<GameProfile> playerGameProfile = CompletableFuture.supplyAsync(() -> {
     		GameProfile profile;
     		
-			Optional<GameProfile> profileQuery = services.profileRepository().findProfileByName(playerName);
+			Optional<GameProfile> profileQuery = IUserCacheInvoker.findProfileByNameInvoker(services.profileRepository(), playerName);
 			if (profileQuery.isPresent()) {
 				profile = services.sessionService().fetchProfile(profileQuery.get().getId(), true).profile();
 				SkinCache.cacheProfile(profile);

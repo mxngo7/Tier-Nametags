@@ -11,7 +11,8 @@
 		"PlayerListHudMixin",
 		"ChatHudMixin",
 		"IPlayerSkinWidgetAccessor",
-		"IMinecraftClientAccessor"
+		"IMinecraftClientAccessor",
+		"IUserCacheInvoker"
 	],
 	"injectors": {
 		"defaultRequire": 1
