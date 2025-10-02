@@ -10,8 +10,10 @@ import com.mojang.authlib.GameProfile;
 import me.mxngo.TierNametags;
 import me.mxngo.config.TierNametagsConfig;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.state.EntityRenderState;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.MutableText;
@@ -45,5 +47,10 @@ public class EntityRendererMixin<T extends Entity, S extends EntityRenderState> 
 		if (component == null) return;
 		
 		state.displayName = instance.applyTierToDisplayName(name, displayName, component);
+	}
+	
+	@Inject(at = @At("INVOKE"), method = "Lnet/minecraft/client/render/entity/EntityRenderer;renderLabelIfPresent(Lnet/minecraft/client/render/entity/state/EntityRenderState;Lnet/minecraft/text/Text;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", cancellable = true)
+	public void renderLabelIfPresent(S state, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int int2, CallbackInfo info) {
+		if (state.displayName.getString().isEmpty()) info.cancel();
 	}
 }
