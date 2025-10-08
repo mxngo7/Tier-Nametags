@@ -16,9 +16,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.mxngo.config.ConfigManager;
+import me.mxngo.config.DisplayType;
 import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.config.TierPosition;
 import me.mxngo.ocetiers.Gamemode;
@@ -35,7 +38,6 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.player.SkinTextures;
@@ -47,7 +49,7 @@ import net.minecraft.util.Pair;
 
 public class TierNametags implements ModInitializer {
 	public static final String MODID = "tiernametags";
-	public static final String VERSION = "1.0.1";
+	public static final String VERSION = "1.0.2";
 	
 	private static TierNametags instance = new TierNametags();
 	private final Logger logger = LoggerFactory.getLogger(MODID);
@@ -110,11 +112,7 @@ public class TierNametags implements ModInitializer {
                     .then(literal("profile")
                         .then(argument("player", StringArgumentType.word())
                     		.suggests((ctx, builder) -> {
-                                if (mc.world != null) {
-                                    for (AbstractClientPlayerEntity player : mc.world.getPlayers()) {
-                                        builder.suggest(player.getName().getString());
-                                    }
-                                }
+                    			suggest(ctx, builder, mc.getNetworkHandler().getPlayerList().stream().map(playerListEntry -> playerListEntry.getProfile().name()).toList());
                                 return builder.buildFuture();
                             })
                             .executes(ctx -> {
@@ -149,9 +147,7 @@ public class TierNametags implements ModInitializer {
 	        			.then(literal("set")
         					.then(argument("gamemode", StringArgumentType.word())
                         			.suggests((ctx, builder) -> {
-                        				for (Gamemode gamemode : Gamemode.values()) {
-                        					builder.suggest(gamemode.getCommandString());
-                        				}
+                        				suggest(ctx, builder, List.of(Gamemode.values()).stream().map(gamemode -> gamemode.getCommandString()).toList());
                         				return builder.buildFuture();
                         			})
                         			.executes(ctx -> {
@@ -165,7 +161,7 @@ public class TierNametags implements ModInitializer {
                         					return 0;
                         				}
                         				
-                        				getConfig().tierGamemode = gamemode;
+                        				getConfig().gamemode = gamemode;
                         				ConfigManager.getInstance().saveConfig();
                         				
                         				instance.sendChatMessage(instance.getCycledGamemodeChatMessage());
@@ -177,18 +173,12 @@ public class TierNametags implements ModInitializer {
 	        			.then(literal("view")
 	        				.then(argument("gamemode", StringArgumentType.word())
                     			.suggests((ctx, builder) -> {
-                    				for (Gamemode gamemode : Gamemode.values()) {
-                    					builder.suggest(gamemode.getCommandString());
-                    				}
+                    				suggest(ctx, builder, List.of(Gamemode.values()).stream().map(gamemode -> gamemode.getCommandString()).toList());
                     				return builder.buildFuture();
                     			})
                     			.then(argument("player", StringArgumentType.word())
                 					.suggests((ctx, builder) -> {
-                						if (mc.world != null) {
-                							for (AbstractClientPlayerEntity player : mc.world.getPlayers()) {
-                								builder.suggest(player.getName().getString());
-                							}
-                						}
+                						suggest(ctx, builder, mc.getNetworkHandler().getPlayerList().stream().map(playerListEntry -> playerListEntry.getProfile().name()).toList());
                 						return builder.buildFuture();
                 					})
                 					.executes(ctx -> {
@@ -294,7 +284,7 @@ public class TierNametags implements ModInitializer {
 		return null;
 	}
 	
-	public MutableText getNametagComponent(String name) {
+	public MutableText getNametagComponent(String name, DisplayType displayType) {
 		TieredPlayer player = instance.getPlayer(name);
 		if (player == null) return null;
 		
@@ -302,29 +292,25 @@ public class TierNametags implements ModInitializer {
 		Tier tier = player.getTier(gamemode);
 		if (tier == null || tier.getIcon() == null) return null;
 		
-		TierNametagsConfig config = getConfig();
-		
-		MutableText gamemodeIcon = Text.literal(gamemode.getIcon()).styled(style -> style.withFont(gamemodeIconsSpriteSource).withColor(0xFFFFFFFF));
-		MutableText tierIcon = Text.literal(tier.getIcon()).styled(style -> style.withFont(gamemodeIconsSpriteSource).withColor(0xFFFFFFFF));
+		MutableText gamemodeIcon = displayType.gamemodeIcon() ? Text.literal(gamemode.getIcon()).styled(style -> style.withFont(gamemodeIconsSpriteSource).withColor(0xFFFFFFFF)) : Text.empty();
+		MutableText tierIcon = displayType.tierIcon() ? Text.literal(tier.getIcon()).styled(style -> style.withFont(gamemodeIconsSpriteSource).withColor(0xFFFFFFFF)) : Text.empty();
 		MutableText tierText = Text.literal(tier.name()).styled(style -> style.withColor(tier.getLightColour()));
 		
-		if (config.tierPosition == TierPosition.LEFT) {
-			if (config.showTierText) return Text.empty().append(gamemodeIcon).append(tierIcon).append(" ").append(tierText).append(" |");
+		if (displayType.position() == TierPosition.LEFT) {
+			if (displayType.tierText()) return Text.empty().append(gamemodeIcon).append(tierIcon).append(" ").append(tierText).append(" |");
 			else return Text.empty().append(gamemodeIcon).append(tierIcon);
 		} else {
-			if (config.showTierText) return Text.empty().append("| ").append(tierText).append(" ").append(tierIcon).append(gamemodeIcon);
+			if (displayType.tierText()) return Text.empty().append("| ").append(tierText).append(" ").append(tierIcon).append(gamemodeIcon);
 			else return tierIcon.append(gamemodeIcon);
 		}
 	}
 	
-	public MutableText applyTierToDisplayName(String name, MutableText displayName, MutableText component) {
-		TierNametagsConfig config = getConfig();
-		
+	public MutableText applyTierToDisplayName(String name, MutableText displayName, MutableText component, DisplayType displayType) {
 		String plainText = displayName.getString();
 		int index = plainText.indexOf(name);
 		
 		if (index < 0) {
-			return config.tierPosition == TierPosition.LEFT
+			return displayType.position() == TierPosition.LEFT
 				? Text.empty().append(component).append(" ").append(displayName)
 				: Text.empty().append(displayName).append(" ").append(component);
 		} else {
@@ -337,7 +323,7 @@ public class TierNametags implements ModInitializer {
 				String content = child.getString();
 				
 				if (content.contains(name)) {
-					if (config.tierPosition == TierPosition.LEFT) result.append(component).append(" ").append(child);
+					if (displayType.position() == TierPosition.LEFT) result.append(component).append(" ").append(child);
 					else result.append(child).append(" ").append(component);
 				} else result.append(child);
 			}
@@ -352,16 +338,16 @@ public class TierNametags implements ModInitializer {
 	}
 	
 	public Gamemode getSelectedGamemode() {
-		return getConfig().tierGamemode;
+		return getConfig().gamemode;
 	}
 	
 	public void cycleSelectedGamemode() {
 		TierNametagsConfig config = getConfig();
 		
-		int index = Arrays.asList(Gamemode.values()).indexOf(config.tierGamemode);
+		int index = Arrays.asList(Gamemode.values()).indexOf(config.gamemode);
 		int length = Gamemode.values().length;
-		if ((index + 1) == length) config.tierGamemode = Gamemode.values()[0];
-		else config.tierGamemode = Gamemode.values()[index + 1];
+		if ((index + 1) == length) config.gamemode = Gamemode.values()[0];
+		else config.gamemode = Gamemode.values()[index + 1];
 		
 		ConfigManager.getInstance().saveConfig();
 		instance.sendChatMessage(instance.getCycledGamemodeChatMessage());
@@ -373,10 +359,10 @@ public class TierNametags implements ModInitializer {
 		if (!reverse) {
 			instance.cycleSelectedGamemode();
 		} else {			
-			int index = Arrays.asList(Gamemode.values()).indexOf(config.tierGamemode);
+			int index = Arrays.asList(Gamemode.values()).indexOf(config.gamemode);
 			int length = Gamemode.values().length;
-			if ((index - 1) == -1) config.tierGamemode = Gamemode.values()[length - 1];
-			else config.tierGamemode = Gamemode.values()[index - 1];
+			if ((index - 1) == -1) config.gamemode = Gamemode.values()[length - 1];
+			else config.gamemode = Gamemode.values()[index - 1];
 			
 			ConfigManager.getInstance().saveConfig();
 			instance.sendChatMessage(instance.getCycledGamemodeChatMessage());
@@ -397,7 +383,7 @@ public class TierNametags implements ModInitializer {
 	
 	private MutableText getCycledGamemodeChatMessage() {
 		TierNametagsConfig config = getConfig();
-		return Text.literal("Cycled gamemode to " + config.tierGamemode.getName()).append(" ").append(Text.literal(config.tierGamemode.getIcon()).styled(style -> style.withFont(gamemodeIconsSpriteSource)));
+		return Text.literal("Cycled gamemode to " + config.gamemode.getName()).append(" ").append(Text.literal(config.gamemode.getIcon()).styled(style -> style.withFont(gamemodeIconsSpriteSource)));
 	}
 	
 	public void addUncachedTextureSupplier(String playerName, CompletableFuture<Supplier<SkinTextures>> textureSupplier) {
@@ -438,6 +424,18 @@ public class TierNametags implements ModInitializer {
         }
         
         return textGradient;
+	}
+	
+	public void suggest(CommandContext<FabricClientCommandSource> ctx, SuggestionsBuilder builder, List<String> items, boolean caseSensitive) {
+		String remaining = caseSensitive ? builder.getRemaining() : builder.getRemaining().toLowerCase();
+		for (String item : items) {
+			String name = caseSensitive ? item : item.toLowerCase();
+			if (name.startsWith(remaining)) builder.suggest(item);
+		}
+	}
+	
+	public void suggest(CommandContext<FabricClientCommandSource> ctx, SuggestionsBuilder builder, List<String> items) {
+		suggest(ctx, builder, items, false);
 	}
 	
 	public TierNametagsConfig getConfig() {

@@ -25,7 +25,7 @@ public class EntityRendererMixin<T extends Entity, S extends EntityRenderState> 
 	public void updateRenderState(T entity, S state, float d, CallbackInfo info) {
 		TierNametagsConfig config = instance.getConfig();
 		
-		if (!config.showOnNametags) return;
+		if (!config.nametags.enabled()) return;
 		if (!(entity instanceof PlayerEntity)) return;
 		
 		AbstractClientPlayerEntity playerEntity = (AbstractClientPlayerEntity) entity;
@@ -35,9 +35,9 @@ public class EntityRendererMixin<T extends Entity, S extends EntityRenderState> 
 		MutableText displayName = (MutableText) state.displayName;
 		if (displayName == null) displayName = Text.literal(name);
 		
-		MutableText component = instance.getNametagComponent(name);
+		MutableText component = instance.getNametagComponent(name, config.nametags);
 		if (component == null) return;
 		
-		state.displayName = instance.applyTierToDisplayName(name, displayName, component);
+		state.displayName = instance.applyTierToDisplayName(name, displayName, component, config.nametags);
 	}
 }
