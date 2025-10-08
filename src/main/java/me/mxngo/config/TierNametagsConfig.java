@@ -1,24 +1,25 @@
 package me.mxngo.config;
 
+import me.mxngo.TierNametags;
 import me.mxngo.ocetiers.Gamemode;
 
 public class TierNametagsConfig {
-	public TierPosition tierPosition = TierPosition.LEFT;
-	public Gamemode tierGamemode = Gamemode.SWORD;
-	public boolean showOnNametags = true;
-	public boolean showOnTablist = false;
-	public boolean showInChat = false;
-	public boolean showTierText = false;
+	public String version = TierNametags.VERSION;
+	
+	public Gamemode gamemode = Gamemode.SWORD;
+	
+	public DisplayType nametags = new DisplayType(true, true, true, false, TierPosition.LEFT);
+	public DisplayType playerList = new DisplayType(false, true, true, false, TierPosition.LEFT);
+	public DisplayType chat = new DisplayType(false, true, true, false, TierPosition.LEFT);
+	
 	public boolean reduceMotion = false;
 	
 	public TierNametagsConfig copy() {
 		TierNametagsConfig copied = new TierNametagsConfig();
-		copied.tierPosition = tierPosition;
-		copied.tierGamemode = tierGamemode;
-		copied.showOnNametags = showOnNametags;
-		copied.showOnTablist = showOnTablist;
-		copied.showInChat = showInChat;
-		copied.showTierText = showTierText;
+		copied.gamemode = gamemode;
+		copied.nametags = nametags;
+		copied.playerList = playerList;
+		copied.chat = chat;
 		copied.reduceMotion = reduceMotion;
 		return copied;
 	}

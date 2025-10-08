@@ -30,9 +30,8 @@ public class EntityRendererMixin<T extends Entity, S extends EntityRenderState> 
 			return;
 		}
 		
-		if (!config.showOnNametags) return;
+		if (!config.nametags.enabled()) return;
 		if (!(entity instanceof PlayerEntity)) return;
-		
 		
 		AbstractClientPlayerEntity playerEntity = (AbstractClientPlayerEntity) entity;
 		GameProfile profile = playerEntity.getGameProfile();
@@ -41,9 +40,9 @@ public class EntityRendererMixin<T extends Entity, S extends EntityRenderState> 
 		MutableText displayName = (MutableText) state.displayName;
 		if (displayName == null) displayName = Text.literal(name);
 		
-		MutableText component = instance.getNametagComponent(name);
+		MutableText component = instance.getComponent(name, config.nametags);
 		if (component == null) return;
 		
-		state.displayName = instance.applyTierToDisplayName(name, displayName, component);
+		state.displayName = instance.applyTier(name, displayName, component, config.nametags);
 	}
 }
