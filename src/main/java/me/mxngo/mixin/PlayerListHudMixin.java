@@ -21,16 +21,16 @@ public class PlayerListHudMixin {
 	@Inject(at = @At("RETURN"), method = "Lnet/minecraft/client/gui/hud/PlayerListHud;getPlayerName(Lnet/minecraft/client/network/PlayerListEntry;)Lnet/minecraft/text/Text;", cancellable = true)
 	public void getPlayerName(PlayerListEntry entry, CallbackInfoReturnable<Text> info) {
 		TierNametagsConfig config = instance.getConfig();
-		if (!config.showOnTablist) return;
+		if (!config.playerList.enabled()) return;
 		
 		GameProfile profile = entry.getProfile();
 		String name = profile.getName();
 		Text displayName = entry.getDisplayName();
 		if (displayName == null) displayName = Text.literal(name);
 		
-		MutableText component = instance.getNametagComponent(name);
+		MutableText component = instance.getComponent(name, config.playerList);
 		if (component == null) return;
 		
-		info.setReturnValue(instance.applyTierToDisplayName(name, (MutableText) displayName, component));
+		info.setReturnValue(instance.applyTier(name, (MutableText) displayName, component, config.playerList));
 	}
 }
