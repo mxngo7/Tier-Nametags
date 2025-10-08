@@ -76,3 +76,7 @@ publishing {
 		// retrieving dependencies.
 	}
 }
+
+tasks.named("remapJar") {
+	archiveVersion.set("${project.version}+mc${project.minecraft_version}")
+}

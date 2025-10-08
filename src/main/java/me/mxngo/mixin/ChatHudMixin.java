@@ -5,6 +5,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 import me.mxngo.TierNametags;
+import me.mxngo.config.TierNametagsConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.network.PlayerListEntry;
@@ -18,7 +19,9 @@ public class ChatHudMixin {
 	
 	@ModifyVariable(at = @At("HEAD"), method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;)V", argsOnly = true)
 	private Text modifyMessage(Text message) {
-		if (!instance.getConfig().showInChat) return message;
+		TierNametagsConfig config = instance.getConfig();
+		
+		if (!config.chat.enabled()) return message;
 		if (mc.world == null) return message;
 		
 		for (PlayerListEntry player : mc.getNetworkHandler().getPlayerList()) {
@@ -43,10 +46,10 @@ public class ChatHudMixin {
 				if (from < text.length()) result.append(Text.literal(text.substring(from)).setStyle(child.getStyle()));
 			}
 			
-			MutableText component = instance.getNametagComponent(name);
+			MutableText component = instance.getComponent(name, config.chat);
 			if (component == null) continue;
 
-			message = instance.applyTierToDisplayName(name, result, component);
+			message = instance.applyTier(name, result, component, config.chat);
 		}
 		
 		return message;
