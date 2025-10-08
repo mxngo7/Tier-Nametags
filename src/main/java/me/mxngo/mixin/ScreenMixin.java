@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import me.mxngo.TierNametags;
-import me.mxngo.config.ConfigManager;
 import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.ocetiers.Gamemode;
 import me.mxngo.ocetiers.Leaderboard;
@@ -515,36 +514,21 @@ public class ScreenMixin {
 		RenderUtils.renderScaledText(screen, context, settingsText, RenderUtils.iX / 2 - screen.getTextRenderer().getWidth(settingsText) / 2 * 3, 25, 0xFFFFFFFF, 3f);
 		
 		int panelWidth = 325;
-		int panelHeight = 200;
+		int panelHeight = 228;
 		int panelX = RenderUtils.iX / 2 - panelWidth / 2;
 		int panelY = 70;
 		
 		RenderUtils.fill(screen, context, panelX, panelY, panelX + panelWidth, panelY + panelHeight, 0x80000000);
 		
 		RenderUtils.renderScaledText(screen, context, Text.literal("Tier Display"), panelX + 10, panelY + 10, 0xFFFFFFFF, 1.3f);
-		RenderUtils.fill(screen, context, panelX + 5, panelY + 25, panelX + panelWidth - 10, panelY + 120, 0x20000000);
+		RenderUtils.fill(screen, context, panelX + 5, panelY + 45, panelX + panelWidth - 10, panelY + 138, 0x20000000);
 		
-		int accessibilityPanelY = panelY + 120;
+		int accessibilityPanelY = panelY + 138;
 		
 		RenderUtils.renderScaledText(screen, context, Text.literal("Accessibility"), panelX + 10, accessibilityPanelY + 10, 0xFFFFFFFF, 1.3f);
 		RenderUtils.fill(screen, context, panelX + 5, accessibilityPanelY + 25, panelX + panelWidth - 10, accessibilityPanelY + 45, 0x20000000);
 		
 		screen.renderSettings(context, mouseX, mouseY, delta);
-		
-		int saveButtonWidth = 70;
-		int saveButtonHeight = 20;
-		
-		boolean hoveringSaveButton = RenderUtils.isMouseHovering(screen, mouseX, mouseY, panelX + panelWidth - saveButtonWidth - 5, panelY + panelHeight - saveButtonHeight - 5, panelX + panelWidth - 5, panelY + panelHeight - 5);
-		
-		RenderUtils.fill(screen, context, panelX + panelWidth - saveButtonWidth - 5, panelY + panelHeight - saveButtonHeight - 5, panelX + panelWidth - 5, panelY + panelHeight - 5, hoveringSaveButton ? 0x20000000 : 0x40000000);
-		
-		Text saveText = Text.literal("Save & Exit");
-		RenderUtils.renderScaledText(screen, context, saveText, panelX + panelWidth - saveButtonWidth / 2 - 5 - (int) (screen.getTextRenderer().getWidth(saveText) * 0.8 / 2), panelY + panelHeight - saveButtonHeight / 2 - 5 - (int) (screen.getTextRenderer().fontHeight * 0.8 / 2), 0xFFFFFFFF, 0.8f);
-		
-		if (hoveringSaveButton && screen.isMouseDown()) {
-			ConfigManager.getInstance().saveConfig(screen.getUpdatedConfig());
-			screen.close();
-		}
 	}
 	
 	@Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/gui/screen/Screen;render(Lnet/minecraft/client/gui/DrawContext;IIF)V")
