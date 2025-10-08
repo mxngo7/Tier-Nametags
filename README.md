@@ -3,7 +3,7 @@
 Tier Nametags is a small project built in under two weeks with the ultimate goal of providing aesthetically pleasing tier information to OceTiers players. Tier Nametags offers customisable display names and aims to allow players to quickly search and check OceTiers statistics without interrupting gameplay or performance.
 ## ✨ Features
 - Supports Minecraft 1.21.1+
-- Caches skins to mitigate ratelimits
+- Caches skins to avoid ratelimits
 - Detailed and unique player profiles
 - Customised icons for each tier and gamemode
 - A comprehensive leaderboard for each gamemode
@@ -32,9 +32,7 @@ Base command: `/tiernametags` or `/tn`
 - `gamemode <set|view> <gamemode> <player?>` -> Either set the gamemode to display or view a player's statistics in a specific gamemode
 ## 🗺️ Roadmap
 - Badges / Peak Tiers for 'retired' players
-- Setting to toggle gamemode / tier icon visibility
 - Local leaderboard that only shows players in your current game
-- For nametag, player list, and chat displays, have seperate options for how the player's tier is displayed
 ## 🖼️ Gallery
 ### In-Game
 <img width="327" height="417" alt="image" src="https://github.com/user-attachments/assets/f004fa0b-8b19-4ca8-9d7e-63a3f891436f" />

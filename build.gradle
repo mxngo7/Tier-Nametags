@@ -77,3 +77,6 @@ publishing {
 	}
 }
 
+tasks.named("remapJar") {
+	archiveVersion.set("${project.version}+mc${project.minecraft_version}")
+}
