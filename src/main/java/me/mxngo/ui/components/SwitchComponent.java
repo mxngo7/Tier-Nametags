@@ -18,21 +18,19 @@ public class SwitchComponent<S extends Screen & ITierNametagsScreen> implements 
 	private Text label;
 	private boolean toggled = false;
 	private float deltaSinceToggled = 3f;
-	private int u;
 	
 	private int switchOnColour, switchOffColour, handleOnColour, handleOffColour,
 				switchOnHoverColour, switchOffHoverColour, handleOnHoverColour, handleOffHoverColour;
 	
 	public int x, y;
 	
-	public SwitchComponent(S parent, Text label, int x, int y, int u, int switchOnColour, int switchOffColour, int handleOnColour, int handleOffColour,
-																		   int switchOnHoverColour, int switchOffHoverColour, int handleOnHoverColour, int handleOffHoverColour
+	public SwitchComponent(S parent, Text label, int x, int y, int switchOnColour, int switchOffColour, int handleOnColour, int handleOffColour,
+																	int switchOnHoverColour, int switchOffHoverColour, int handleOnHoverColour, int handleOffHoverColour
 	) {
 		this.parent = parent;
 		this.label = label;
 		this.x = x;
 		this.y = y;
-		this.u = u;
 		
 		this.switchOnColour = switchOnColour;
 		this.switchOffColour = switchOffColour;
@@ -45,14 +43,13 @@ public class SwitchComponent<S extends Screen & ITierNametagsScreen> implements 
 		this.handleOffHoverColour = handleOffHoverColour;
 	}
 	
-	public SwitchComponent(S parent, Text label, int x, int y, int u, int switchOnColour, int switchOffColour, int handleOnColour, int handleOffColour, 
+	public SwitchComponent(S parent, Text label, int x, int y, int switchOnColour, int switchOffColour, int handleOnColour, int handleOffColour, 
 			   							int switchOnHoverColour, int switchOffHoverColour, int handleOnHoverColour, int handleOffHoverColour, boolean toggled
 	) {
 		this.parent = parent;
 		this.label = label;
 		this.x = x;
 		this.y = y;
-		this.u = u;
 		
 		this.switchOnColour = switchOnColour;
 		this.switchOffColour = switchOffColour;
@@ -87,11 +84,11 @@ public class SwitchComponent<S extends Screen & ITierNametagsScreen> implements 
 		int switchX = x;
 		int switchY = y;
 		int switchWidth = 21;
-		int switchHeight = 11 + u;
+		int switchHeight = 11;
 		
 		int handleY = 1;
 		int handleWidth = 9;
-		int handleHeight = 9 + u;
+		int handleHeight = 9;
 		
 		int handleOffset = config.reduceMotion ? (toggled ? 11 : 1) : (toggled ? 0 : 12) + (toggled ? 1 : -1) * ((int) ((Math.clamp(deltaSinceToggled, 0f, 3f) / 3f) * 11));
 		
@@ -111,7 +108,7 @@ public class SwitchComponent<S extends Screen & ITierNametagsScreen> implements 
 		int switchX = x;
 		int switchY = y;
 		int switchWidth = 21;
-		int switchHeight = 11 + u;
+		int switchHeight = 11;
 		
 		if (RenderUtils.isMouseHovering(parent, mouseX, mouseY, switchX, switchY, switchX + switchWidth, switchY + switchHeight) && button == GLFW.GLFW_MOUSE_BUTTON_1 && deltaSinceToggled > 2.5f) {
 			toggled = !toggled;

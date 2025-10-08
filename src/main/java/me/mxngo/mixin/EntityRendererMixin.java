@@ -35,7 +35,7 @@ public class EntityRendererMixin<T extends Entity> {
 			return;
 		}
 		
-		if (!config.showOnNametags) return;
+		if (!config.nametags.enabled()) return;
 		if (!(entity instanceof PlayerEntity)) return;
 		
 		AbstractClientPlayerEntity playerEntity = (AbstractClientPlayerEntity) entity;
@@ -45,10 +45,10 @@ public class EntityRendererMixin<T extends Entity> {
 		MutableText displayName = (MutableText) entity.getDisplayName();
 		if (displayName == null) displayName = Text.literal(name);
 		
-		MutableText component = instance.getNametagComponent(name);
+		MutableText component = instance.getComponent(name, config.nametags);
 		if (component == null) return;
 		
-		args.set(1, instance.applyTierToDisplayName(name, displayName, component));
+		args.set(1, instance.applyTier(name, displayName, component, config.nametags));
 	}
 	
 	@Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/render/entity/EntityRenderer;renderLabelIfPresent(Lnet/minecraft/entity/Entity;Lnet/minecraft/text/Text;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IF)V", cancellable = true)
