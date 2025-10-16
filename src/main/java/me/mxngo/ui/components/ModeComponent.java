@@ -7,13 +7,14 @@ import java.util.function.Function;
 import org.lwjgl.glfw.GLFW;
 
 import me.mxngo.ui.IComponent;
+import me.mxngo.ui.screens.ITierNametagsScreen;
 import me.mxngo.ui.util.RenderUtils;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
-public class ModeComponent<T> implements IComponent {
-	private Screen parent;
+public class ModeComponent<T, S extends Screen & ITierNametagsScreen> implements IComponent {
+	private S parent;
 	
 	private List<T> modes = new ArrayList<>();
 	private T mode;
@@ -23,7 +24,7 @@ public class ModeComponent<T> implements IComponent {
 	
 	public int x, y;
 	
-	public ModeComponent(Screen parent, List<T> modes, T defaultMode, Function<T, String> modeNameSupplier, Function<T, Text> iconSupplier, int x, int y) {
+	public ModeComponent(S parent, List<T> modes, T defaultMode, Function<T, String> modeNameSupplier, Function<T, Text> iconSupplier, int x, int y) {
 		this.parent = parent;
 		this.modes = modes;
 		this.mode = defaultMode;

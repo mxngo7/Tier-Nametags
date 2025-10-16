@@ -23,7 +23,7 @@ import me.mxngo.ui.util.RenderUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.entity.player.SkinTextures;
+import net.minecraft.client.util.SkinTextures;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -32,7 +32,7 @@ public class ScreenMixin {
 	private TierNametags instance = TierNametags.getInstance();
 	
 	private void renderProfileScreen(ProfileScreen screen, DrawContext context, int mouseX, int mouseY, float delta) {
-		if (!screen.isPlayerAnimationPaused()) screen.playerEntity.limbAnimator.updateLimbs(0.35f, 1.0f, 0.035f);
+//		if (!screen.isPlayerAnimationPaused()) screen.playerEntity.limbAnimator.updateLimbs(0.35f, 1.0f, 0.035f);
 		
 		TierNametagsConfig config = instance.getConfig();
 		Leaderboard leaderboard = instance.getLeaderboard();
@@ -255,7 +255,7 @@ public class ScreenMixin {
 	    Text findMeText = Text.literal("Go To Me");
 	    RenderUtils.renderScaledText(screen, context, findMeText, cardXOffset + cardWidth - findMeButtonWidth / 2 - screen.getTextRenderer().getWidth(findMeText) / 2, (int) (10 + cardHeight / 2 - screen.getTextRenderer().fontHeight / 2 - scrollOffset) + findMeAnimationOffset, 0xFFFFFFFF, 1.0f);
 	    
-	    String name = screen.mc.player.getGameProfile().name();
+	    String name = screen.mc.player.getGameProfile().getName();
 	    
     	if (!screen.getPlayerToFind().isEmpty()) {
 	    	for (int i = 0; i < players.size(); i++) {
@@ -376,7 +376,7 @@ public class ScreenMixin {
 	    	RenderUtils.renderScaledTextWithGradient(screen, context, playerNameText, cardXOffset + rankingWidth + animationOffset + 40, y + cardHeight / 2 - screen.getTextRenderer().fontHeight / 2, playerNameStartColour, playerNameStopColour, 1.0f);
 	    	
 	    	SkinTextures skinTextures = SkinCache.getPlayer(player.name());
-	    	if (skinTextures != null) RenderUtils.renderTexture(screen, context, skinTextures.body().texturePath(), cardXOffset + cardWidth + animationOffset - 27, y + cardHeight / 2 - 12, 24, 24, 24, 24, 192, 192);
+	    	if (skinTextures != null) RenderUtils.renderTexture(screen, context, skinTextures.texture(), cardXOffset + cardWidth + animationOffset - 27, y + cardHeight / 2 - 12, 24, 24, 24, 24, 192, 192);
 	    	else RenderUtils.fill(screen, context, cardXOffset + cardWidth + animationOffset - 27, y + cardHeight / 2 - 12, cardXOffset + cardWidth + animationOffset - 3, y + cardHeight / 2 + 12, 0x0AFFFFFF);
 	    	
 	    	if (shouldAnimate) context.disableScissor();
@@ -531,7 +531,7 @@ public class ScreenMixin {
 		screen.renderSettings(context, mouseX, mouseY, delta);
 	}
 	
-	@Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/gui/screen/Screen;render(Lnet/minecraft/client/gui/DrawContext;IIF)V")
+	@Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/gui/screen/Screen;render(Lnet/minecraft/client/gui/DrawContext;IIF)V")
 	public void render(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo info) {
 		Screen screen = (Screen) ((Object) this);
 		if (screen instanceof ProfileScreen) this.renderProfileScreen((ProfileScreen) screen, context, mouseX, mouseY, delta);

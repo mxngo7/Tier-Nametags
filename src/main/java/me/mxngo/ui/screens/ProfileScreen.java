@@ -11,30 +11,31 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.yggdrasil.response.NameAndId;
 
 import me.mxngo.TierNametags;
 import me.mxngo.config.TierNametagsConfig;
+import me.mxngo.mixin.IMinecraftClientAccessor;
 import me.mxngo.mixin.IPlayerSkinWidgetAccessor;
+import me.mxngo.mixin.IUserCacheInvoker;
 import me.mxngo.ocetiers.Gamemode;
 import me.mxngo.ocetiers.SkinCache;
 import me.mxngo.ui.util.RenderUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Click;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.widget.PlayerSkinWidget;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.entity.player.SkinTextures;
+import net.minecraft.client.util.SkinTextures;
 import net.minecraft.text.Text;
 import net.minecraft.util.ApiServices;
 import net.minecraft.util.Identifier;
 
 @Environment(EnvType.CLIENT)
-public class ProfileScreen extends Screen {
+public class ProfileScreen extends Screen implements ITierNametagsScreen {
 	public static boolean renderWidget = true;
 	
 	public MinecraftClient mc = MinecraftClient.getInstance();
@@ -56,7 +57,7 @@ public class ProfileScreen extends Screen {
 	
 	private float deltaSinceLastRenderModeToggle = 5.0f;
 	private float deltaSinceLastSkinRefresh = 60.0f;
-	private float deltaSinceLastAnimationPause = 5.0f;
+//	private float deltaSinceLastAnimationPause = 5.0f;
 	private float animationDelta = 0.0f;
 	
     public ProfileScreen(String playerName, boolean showLeaderboardButton, Gamemode leaderboardGamemode, double leaderboardScroll, String leaderboardSearchQuery) {
@@ -67,12 +68,16 @@ public class ProfileScreen extends Screen {
         this.leaderboardScroll = leaderboardScroll;
         this.leaderboardSearchQuery = leaderboardSearchQuery;
         this.playerEntity = new AbstractClientPlayerEntity(mc.world, new GameProfile(UUID.randomUUID(), playerName)) {
-        	@Override
-         	public SkinTextures getSkin() {
+         	public SkinTextures getSkinTextures() {
          		SkinTextures textures = SkinCache.getPlayer(playerName);
          		if (textures != null) return textures;
          		return SkinCache.getUnknownSkinTextures();
          	};
+         	
+         	@Override
+         	public boolean shouldRenderName() {
+         		return false;
+         	}
          };
     }
     
@@ -81,12 +86,16 @@ public class ProfileScreen extends Screen {
         this.playerName = playerName;
         this.showLeaderboardButton = false;
         this.playerEntity = new AbstractClientPlayerEntity(mc.world, new GameProfile(UUID.randomUUID(), playerName)) {
-         	@Override
-        	public SkinTextures getSkin() {
+         	public SkinTextures getSkinTextures() {
          		SkinTextures textures = SkinCache.getPlayer(playerName);
          		if (textures != null) return textures;
          		return SkinCache.getUnknownSkinTextures();
          	};
+         	
+         	@Override
+         	public boolean shouldRenderName() {
+         		return false;
+         	}
         };
     }
     
@@ -122,15 +131,19 @@ public class ProfileScreen extends Screen {
     	return this.animationDelta;
     }
     
+    public TextRenderer getTextRenderer() {
+		return this.textRenderer;
+	}
+    
     private void fetchSkinTextureSupplier() {
-    	ApiServices services = mc.getApiServices();
+    	ApiServices services = ApiServices.create(((IMinecraftClientAccessor) mc).getAuthenticationService(), mc.runDirectory);
     	
     	CompletableFuture<GameProfile> playerGameProfile = CompletableFuture.supplyAsync(() -> {
     		GameProfile profile;
     		
-			Optional<NameAndId> profileQuery = services.profileRepository().findProfileByName(playerName);
+			Optional<GameProfile> profileQuery = IUserCacheInvoker.findProfileByNameInvoker(services.profileRepository(), playerName);
 			if (profileQuery.isPresent()) {
-				profile = services.sessionService().fetchProfile(profileQuery.get().id(), true).profile();
+				profile = services.sessionService().fetchProfile(profileQuery.get().getId(), true).profile();
 				SkinCache.cacheProfile(profile);
 				shouldCache = true;
 			} else profile = new GameProfile(UUID.randomUUID(), playerName);
@@ -138,7 +151,7 @@ public class ProfileScreen extends Screen {
     		return profile;
     	});
     	
-    	this.skinTextureSupplier = playerGameProfile.thenApplyAsync(profile -> mc.getSkinProvider().supplySkinTextures(profile, true), mc);
+    	this.skinTextureSupplier = playerGameProfile.thenApplyAsync(profile -> mc.getSkinProvider().getSkinTexturesSupplier(profile), mc);
     }
     
     @Override
@@ -152,7 +165,7 @@ public class ProfileScreen extends Screen {
     			int x = RenderUtils.getScaled(50, RenderUtils.iX, this.width);
     			int w = RenderUtils.getScaled(150, RenderUtils.iX, this.width);
     			int h = RenderUtils.getScaled(300, RenderUtils.iY, this.height);
-    			playerSkinWidget = new PlayerSkinWidget(w, h, mc.getLoadedEntityModels(), textureSupplier);
+    			playerSkinWidget = new PlayerSkinWidget(w, h, mc.getEntityModelLoader(), textureSupplier);
     			playerSkinWidget.setPosition(x, this.height / 2 - h / 2);
     		}
     	} else fetchSkinTextureSupplier();
@@ -170,7 +183,7 @@ public class ProfileScreen extends Screen {
     			int w = RenderUtils.getScaled(150, RenderUtils.iX, this.width);
     			int h = RenderUtils.getScaled(300, RenderUtils.iY, this.height);
     			
-    			playerSkinWidget = new PlayerSkinWidget(w, h, mc.getLoadedEntityModels(), skinTextureSupplier);
+    			playerSkinWidget = new PlayerSkinWidget(w, h, mc.getEntityModelLoader(), skinTextureSupplier);
     			playerSkinWidget.setPosition(x, this.height / 2 - h / 2);
     		});
     		
@@ -193,7 +206,7 @@ public class ProfileScreen extends Screen {
 		float scale = RenderUtils.getScaled(150f, RenderUtils.iY, this.height);
 		
 		Quaternionf quaternion = new Quaternionf().rotateAxis((float) Math.toRadians(180), new Vector3f(1, 0, 0));
-		InventoryScreen.drawEntity(context, 0, 0, RenderUtils.getScaled(RenderUtils.iX / 4, RenderUtils.iX, this.width), RenderUtils.getScaled(RenderUtils.iY, RenderUtils.iY, this.height), scale, new Vector3f(0, 1f, 0), quaternion, null, playerEntity);
+		InventoryScreen.drawEntity(context, 0, 0, scale, new Vector3f(0.75f, 2.5f, 0f), quaternion, null, playerEntity);
     }
 
     @Override
@@ -235,35 +248,22 @@ public class ProfileScreen extends Screen {
         	fetchSkinTextureSupplier();
         } else deltaSinceLastSkinRefresh += delta;
         
-        if (!renderWidget) {
-        	int pauseButtonAnimationDistanceProgress = distanceToMove - (int) (RenderUtils.easeOut((double) Math.clamp(animationDelta - 15, 0, deltaUntilAnimationComplete) / deltaUntilAnimationComplete, 4) * distanceToMove);
-        	int pauseButtonOffset = config.reduceMotion ? 0 : -pauseButtonAnimationDistanceProgress;
-        	
-        	boolean hoveringPauseAnimationButton = RenderUtils.isMouseHovering(this, mouseX, mouseY, xOffset + 44, 10 + pauseButtonOffset, xOffset + 64, 30 + pauseButtonOffset);
-        	
-        	RenderUtils.fill(this, context, xOffset + 44, 10 + pauseButtonOffset, xOffset + 64, 30 + pauseButtonOffset, hoveringPauseAnimationButton ? 0x60000000 : 0x80000000);
-        	RenderUtils.renderTexture(this, context, Identifier.of(TierNametags.MODID, "textures/font/" + (playerAnimationPaused ? "play" : "pause") + ".png"), xOffset + 46, 12 + pauseButtonOffset, 16, 16);
-        	
-        	if (mouseDown && hoveringPauseAnimationButton && deltaSinceLastAnimationPause > 5.0f) {
-        		playerAnimationPaused = !playerAnimationPaused;
-        		deltaSinceLastAnimationPause = 0.0f;
-        	} else deltaSinceLastAnimationPause += delta;
-        }
+//        if (!renderWidget) {
+//        	int pauseButtonAnimationDistanceProgress = distanceToMove - (int) (RenderUtils.easeOut((double) Math.clamp(animationDelta - 15, 0, deltaUntilAnimationComplete) / deltaUntilAnimationComplete, 4) * distanceToMove);
+//        	int pauseButtonOffset = config.reduceMotion ? 0 : -pauseButtonAnimationDistanceProgress;
+//        	
+//        	boolean hoveringPauseAnimationButton = RenderUtils.isMouseHovering(this, mouseX, mouseY, xOffset + 44, 10 + pauseButtonOffset, xOffset + 64, 30 + pauseButtonOffset);
+//        	
+//        	RenderUtils.fill(this, context, xOffset + 44, 10 + pauseButtonOffset, xOffset + 64, 30 + pauseButtonOffset, hoveringPauseAnimationButton ? 0x60000000 : 0x80000000);
+//        	RenderUtils.renderTexture(this, context, Identifier.of(TierNametags.MODID, "textures/font/" + (playerAnimationPaused ? "play" : "pause") + ".png"), xOffset + 46, 12 + pauseButtonOffset, 16, 16);
+//        	
+//        	if (mouseDown && hoveringPauseAnimationButton && deltaSinceLastAnimationPause > 5.0f) {
+//        		playerAnimationPaused = !playerAnimationPaused;
+//        		deltaSinceLastAnimationPause = 0.0f;
+//        	} else deltaSinceLastAnimationPause += delta;
+//        }
         
         List<AbstractClientPlayerEntity> players = mc.world.getPlayers();
-        
-//        AbstractClientPlayerEntity player = new AbstractClientPlayerEntity(mc.world, new GameProfile(UUID.randomUUID(), playerName)) {
-//         	public SkinTextures getSkinTextures() {
-//         		SkinTextures textures = SkinCache.getPlayer(playerName);
-//         		if (textures != null) return textures;
-//         		return SkinCache.getUnknownSkinTextures();
-//         	};
-//         };
-         
-//         player.limbAnimator.setSpeed(1.0f);
-//         player.limbAnimator.
-        
-//        if (!(this.isMouseDown() && this.widget.isHovered())) accessor.setHorizontalRotation(accessor.getHorizontalRotation() + 0.02f);
         
         boolean exists = players.stream().anyMatch(p -> p.getName().getString().equalsIgnoreCase(this.playerName));
         if (exists) RenderUtils.renderTexture(this, context, Identifier.of(TierNametags.MODID, "textures/font/online_status.png"), 267, 52, 29, 28);
@@ -301,33 +301,29 @@ public class ProfileScreen extends Screen {
     }
     
     @Override
-	public boolean mouseClicked(Click click, boolean doubled) {
-    	int button = click.button();
-    	
+	public boolean mouseClicked(double mouseX, double mouseY, int button) {
     	if (playerSkinWidget != null && playerSkinWidget.isHovered())
-    		playerSkinWidget.mouseClicked(click, doubled);
+    		playerSkinWidget.mouseClicked(mouseX, mouseY, button);
     	
 		if (button == GLFW.GLFW_MOUSE_BUTTON_1) this.mouseDown = true;
-		return super.mouseClicked(click, doubled);
+		return super.mouseClicked(mouseX, mouseY, button);
 	}
 	
 	@Override
-	public boolean mouseReleased(Click click) {
-		int button = click.button();
-		
+	public boolean mouseReleased(double mouseX, double mouseY, int button) {
 		if (playerSkinWidget != null)
-    		playerSkinWidget.mouseReleased(click);
+    		playerSkinWidget.mouseReleased(mouseX, mouseY, button);
 		
 		if (button == GLFW.GLFW_MOUSE_BUTTON_1) this.mouseDown = false;
-		return super.mouseReleased(click);
+		return super.mouseReleased(mouseX, mouseY, button);
 	}
 	
 	@Override
-	public boolean mouseDragged(Click click, double offsetX, double offsetY) {
+	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
 		if (playerSkinWidget != null && playerSkinWidget.isHovered())
-    		playerSkinWidget.mouseDragged(click, offsetX, offsetY);
+    		playerSkinWidget.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
 		
-		return super.mouseDragged(click, offsetX, offsetY);
+		return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
 	}
 	
 	public enum PlayerProfileRenderMode {

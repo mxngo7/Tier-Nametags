@@ -16,21 +16,21 @@ import me.mxngo.ui.components.TabContentComponent;
 import me.mxngo.ui.util.RenderUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.Click;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
 @Environment(EnvType.CLIENT)
-public class SettingsScreen extends Screen {
+public class SettingsScreen extends Screen implements ITierNametagsScreen {
 	private static int selectedTab = 0;
 	
 	private TierNametagsConfig updatedConfig = TierNametags.getInstance().getConfig().copy();
 	private boolean mouseDown = false;
 	
 	public DisplayModeTabComponent nametagsTabContent, playerListTabContent, chatTabContent;
-	public SwitchComponent reducedMotion;
-	public ModeComponent<Gamemode> gamemodeSelector;
+	public SwitchComponent<SettingsScreen> reducedMotion;
+	public ModeComponent<Gamemode, SettingsScreen> gamemodeSelector;
 	
 	public SettingsScreen() {
 		super(Text.literal("Settings"));
@@ -42,6 +42,10 @@ public class SettingsScreen extends Screen {
 	
 	public boolean isMouseDown() {
 		return mouseDown;
+	}
+	
+	public TextRenderer getTextRenderer() {
+		return this.textRenderer;
 	}
 	
 	@Override
@@ -64,11 +68,11 @@ public class SettingsScreen extends Screen {
 		
 		nametagsTabContent = new DisplayModeTabComponent() {
 			{				
-				enabled = new SwitchComponent(screen, Text.literal("Enabled"), RenderUtils.iX / 2 - 152, yOffset, a, b, c, d, e, f, g, h, updatedConfig.nametags.enabled());
-				displayTierText = new SwitchComponent(screen, Text.literal("Tier Text"), RenderUtils.iX / 2 - 152, yOffset + 14, a, b, c, d, e, f, g, h, updatedConfig.nametags.tierText());
-				displayTierIcon = new SwitchComponent(screen, Text.literal("Tier Icon"), RenderUtils.iX / 2 - 152, yOffset + 28, a, b, c, d, e, f, g, h, updatedConfig.nametags.tierIcon());
-				displayGamemodeIcon = new SwitchComponent(screen, Text.literal("Gamemode Icon"), RenderUtils.iX / 2 - 152, yOffset + 42, a, b, c, d, e, f, g, h, updatedConfig.nametags.gamemodeIcon());
-				tierPosition = new SwitchComponent(screen, Text.literal("Tier Position: " + updatedConfig.nametags.position().toString().toLowerCase()), RenderUtils.iX / 2 - 152, yOffset + 56, a, b, c, d, e, f, g, h, updatedConfig.nametags.position() == TierPosition.RIGHT);
+				enabled = new SwitchComponent<>(screen, Text.literal("Enabled"), RenderUtils.iX / 2 - 152, yOffset, a, b, c, d, e, f, g, h, updatedConfig.nametags.enabled());
+				displayTierText = new SwitchComponent<>(screen, Text.literal("Tier Text"), RenderUtils.iX / 2 - 152, yOffset + 14, a, b, c, d, e, f, g, h, updatedConfig.nametags.tierText());
+				displayTierIcon = new SwitchComponent<>(screen, Text.literal("Tier Icon"), RenderUtils.iX / 2 - 152, yOffset + 28, a, b, c, d, e, f, g, h, updatedConfig.nametags.tierIcon());
+				displayGamemodeIcon = new SwitchComponent<>(screen, Text.literal("Gamemode Icon"), RenderUtils.iX / 2 - 152, yOffset + 42, a, b, c, d, e, f, g, h, updatedConfig.nametags.gamemodeIcon());
+				tierPosition = new SwitchComponent<>(screen, Text.literal("Tier Position: " + updatedConfig.nametags.position().toString().toLowerCase()), RenderUtils.iX / 2 - 152, yOffset + 56, a, b, c, d, e, f, g, h, updatedConfig.nametags.position() == TierPosition.RIGHT);
 			}
 			
 			@Override
@@ -98,11 +102,11 @@ public class SettingsScreen extends Screen {
 		
 		playerListTabContent = new DisplayModeTabComponent() {
 			{				
-				enabled = new SwitchComponent(screen, Text.literal("Enabled"), RenderUtils.iX / 2 - 152, yOffset, a, b, c, d, e, f, g, h, updatedConfig.playerList.enabled());
-				displayTierText = new SwitchComponent(screen, Text.literal("Tier Text"), RenderUtils.iX / 2 - 152, yOffset + 14, a, b, c, d, e, f, g, h, updatedConfig.playerList.tierText());
-				displayTierIcon = new SwitchComponent(screen, Text.literal("Tier Icon"), RenderUtils.iX / 2 - 152, yOffset + 28, a, b, c, d, e, f, g, h, updatedConfig.playerList.tierIcon());
-				displayGamemodeIcon = new SwitchComponent(screen, Text.literal("Gamemode Icon"), RenderUtils.iX / 2 - 152, yOffset + 42, a, b, c, d, e, f, g, h, updatedConfig.playerList.gamemodeIcon());
-				tierPosition = new SwitchComponent(screen, Text.literal("Tier Position: " + updatedConfig.playerList.position().toString().toLowerCase()), RenderUtils.iX / 2 - 152, yOffset + 56, a, b, c, d, e, f, g, h, updatedConfig.playerList.position() == TierPosition.RIGHT);
+				enabled = new SwitchComponent<>(screen, Text.literal("Enabled"), RenderUtils.iX / 2 - 152, yOffset, a, b, c, d, e, f, g, h, updatedConfig.playerList.enabled());
+				displayTierText = new SwitchComponent<>(screen, Text.literal("Tier Text"), RenderUtils.iX / 2 - 152, yOffset + 14, a, b, c, d, e, f, g, h, updatedConfig.playerList.tierText());
+				displayTierIcon = new SwitchComponent<>(screen, Text.literal("Tier Icon"), RenderUtils.iX / 2 - 152, yOffset + 28, a, b, c, d, e, f, g, h, updatedConfig.playerList.tierIcon());
+				displayGamemodeIcon = new SwitchComponent<>(screen, Text.literal("Gamemode Icon"), RenderUtils.iX / 2 - 152, yOffset + 42, a, b, c, d, e, f, g, h, updatedConfig.playerList.gamemodeIcon());
+				tierPosition = new SwitchComponent<>(screen, Text.literal("Tier Position: " + updatedConfig.playerList.position().toString().toLowerCase()), RenderUtils.iX / 2 - 152, yOffset + 56, a, b, c, d, e, f, g, h, updatedConfig.playerList.position() == TierPosition.RIGHT);
 			}
 			
 			@Override
@@ -132,11 +136,11 @@ public class SettingsScreen extends Screen {
 		
 		chatTabContent = new DisplayModeTabComponent() {
 			{				
-				enabled = new SwitchComponent(screen, Text.literal("Enabled"), RenderUtils.iX / 2 - 152, yOffset, a, b, c, d, e, f, g, h, updatedConfig.chat.enabled());
-				displayTierText = new SwitchComponent(screen, Text.literal("Tier Text"), RenderUtils.iX / 2 - 152, yOffset + 14, a, b, c, d, e, f, g, h, updatedConfig.chat.tierText());
-				displayTierIcon = new SwitchComponent(screen, Text.literal("Tier Icon"), RenderUtils.iX / 2 - 152, yOffset + 28, a, b, c, d, e, f, g, h, updatedConfig.chat.tierIcon());
-				displayGamemodeIcon = new SwitchComponent(screen, Text.literal("Gamemode Icon"), RenderUtils.iX / 2 - 152, yOffset + 42, a, b, c, d, e, f, g, h, updatedConfig.chat.gamemodeIcon());
-				tierPosition = new SwitchComponent(screen, Text.literal("Tier Position: " + updatedConfig.chat.position().toString().toLowerCase()), RenderUtils.iX / 2 - 152, yOffset + 56, a, b, c, d, e, f, g, h, updatedConfig.chat.position() == TierPosition.RIGHT);
+				enabled = new SwitchComponent<>(screen, Text.literal("Enabled"), RenderUtils.iX / 2 - 152, yOffset, a, b, c, d, e, f, g, h, updatedConfig.chat.enabled());
+				displayTierText = new SwitchComponent<>(screen, Text.literal("Tier Text"), RenderUtils.iX / 2 - 152, yOffset + 14, a, b, c, d, e, f, g, h, updatedConfig.chat.tierText());
+				displayTierIcon = new SwitchComponent<>(screen, Text.literal("Tier Icon"), RenderUtils.iX / 2 - 152, yOffset + 28, a, b, c, d, e, f, g, h, updatedConfig.chat.tierIcon());
+				displayGamemodeIcon = new SwitchComponent<>(screen, Text.literal("Gamemode Icon"), RenderUtils.iX / 2 - 152, yOffset + 42, a, b, c, d, e, f, g, h, updatedConfig.chat.gamemodeIcon());
+				tierPosition = new SwitchComponent<>(screen, Text.literal("Tier Position: " + updatedConfig.chat.position().toString().toLowerCase()), RenderUtils.iX / 2 - 152, yOffset + 56, a, b, c, d, e, f, g, h, updatedConfig.chat.position() == TierPosition.RIGHT);
 			}
 			
 			@Override
@@ -165,7 +169,7 @@ public class SettingsScreen extends Screen {
 		};
 		
 		gamemodeSelector = new ModeComponent<>(this, List.of(Gamemode.values()), updatedConfig.gamemode, Gamemode::getName, Gamemode::getStyledIcon, RenderUtils.iX / 2 - 152, yOffset + 70);
-		reducedMotion = new SwitchComponent(this, Text.literal("Reduced Motion"), RenderUtils.iX / 2 - 152, yOffset + 118, a, b, c, d, e, f, g, h, updatedConfig.reduceMotion);
+		reducedMotion = new SwitchComponent<>(this, Text.literal("Reduced Motion"), RenderUtils.iX / 2 - 152, yOffset + 118, a, b, c, d, e, f, g, h, updatedConfig.reduceMotion);
 	}
 	
 	@Override
@@ -263,11 +267,7 @@ public class SettingsScreen extends Screen {
 	}
 	
 	@Override
-	public boolean mouseClicked(Click click, boolean doubled) {
-		double mouseX = click.x();
-		double mouseY = click.y();
-		int button = click.button();
-		
+	public boolean mouseClicked(double mouseX, double mouseY, int button) {
 		if (selectedTab == 0) nametagsTabContent.mouseClicked(mouseX, mouseY, button);
 		else if (selectedTab == 1) playerListTabContent.mouseClicked(mouseX, mouseY, button);
 		else if (selectedTab == 2) chatTabContent.mouseClicked(mouseX, mouseY, button);
@@ -300,19 +300,17 @@ public class SettingsScreen extends Screen {
 			if (hoveringSaveButton) this.save();
 		}
 		
-		return super.mouseClicked(click, doubled);
+		return super.mouseClicked(mouseX, mouseY, button);
 	}
 	
 	@Override
-	public boolean mouseReleased(Click click) {
-		int button = click.button();
-		
+	public boolean mouseReleased(double mouseX, double mouseY, int button) {
 		if (button == GLFW.GLFW_MOUSE_BUTTON_1) mouseDown = false;
 		
-		return super.mouseReleased(click);
+		return super.mouseReleased(mouseX, mouseY, button);
 	}
 	
 	private abstract class DisplayModeTabComponent extends TabContentComponent {
-		public SwitchComponent enabled, displayTierText, displayTierIcon, displayGamemodeIcon, tierPosition;
+		public SwitchComponent<SettingsScreen> enabled, displayTierText, displayTierIcon, displayGamemodeIcon, tierPosition;
 	}
 }

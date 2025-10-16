@@ -25,7 +25,7 @@ public class ChatHudMixin {
 		if (mc.world == null) return message;
 		
 		for (PlayerListEntry player : mc.getNetworkHandler().getPlayerList()) {
-			String name = player.getProfile().name();
+			String name = player.getProfile().getName();
 			if (!message.getString().toLowerCase().contains(name.toLowerCase())) continue;
 			
 			MutableText result = Text.empty();
@@ -46,10 +46,10 @@ public class ChatHudMixin {
 				if (from < text.length()) result.append(Text.literal(text.substring(from)).setStyle(child.getStyle()));
 			}
 			
-			MutableText component = instance.getNametagComponent(name, config.chat);
+			MutableText component = instance.getComponent(name, config.chat);
 			if (component == null) continue;
 
-			message = instance.applyTierToDisplayName(name, result, component, config.chat);
+			message = instance.applyTier(name, result, component, config.chat);
 		}
 		
 		return message;

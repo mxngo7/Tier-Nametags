@@ -1,7 +1,6 @@
 package me.mxngo.ocetiers;
 
 import me.mxngo.TierNametags;
-import net.minecraft.text.StyleSpriteSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -16,8 +15,6 @@ public enum Gamemode {
 	DIAMOND_SMP("Diamond SMP", "textures/font/gamemodes/diamond_smp.png"),
 	CART("Cart", "textures/font/gamemodes/cart.png", 0),
 	MACE("Mace", "textures/font/gamemodes/mace.png", 8);
-	
-	private final StyleSpriteSource.Font spriteSource = new StyleSpriteSource.Font(Identifier.of(TierNametags.MODID, "icons"));
 	
 	private final String name;
 	private final String commandString;
@@ -58,7 +55,7 @@ public enum Gamemode {
 	}
 	
 	public Text getStyledIcon() {
-		return Text.literal(getIcon()).styled(style -> style.withFont(spriteSource));
+		return Text.literal(getIcon()).styled(style -> style.withFont(Identifier.of(TierNametags.MODID, "icons")));
 	}
 	
 	public String getCommandString() {

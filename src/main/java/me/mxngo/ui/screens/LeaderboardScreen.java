@@ -10,13 +10,13 @@ import me.mxngo.ocetiers.TieredPlayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Click;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
 @Environment(EnvType.CLIENT)
-public class LeaderboardScreen extends Screen {
+public class LeaderboardScreen extends Screen implements ITierNametagsScreen {
 	private TierNametags instance = TierNametags.getInstance();
 	public MinecraftClient mc = MinecraftClient.getInstance();
 	
@@ -88,6 +88,10 @@ public class LeaderboardScreen extends Screen {
 	
 	public String getPlayerToFind() {
 		return this.playerToFind;
+	}
+	
+	public TextRenderer getTextRenderer() {
+		return this.textRenderer;
 	}
 	
 	public void setSelectedTab(int tab) {
@@ -177,19 +181,15 @@ public class LeaderboardScreen extends Screen {
 	}
 	
 	@Override
-	public boolean mouseClicked(Click click, boolean doubled) {
-		int button = click.button();
-		
+	public boolean mouseClicked(double mouseX, double mouseY, int button) {
 		if (button == GLFW.GLFW_MOUSE_BUTTON_1) this.mouseDown = true;
-		return super.mouseClicked(click, doubled);
+		return super.mouseClicked(mouseX, mouseY, button);
 	}
 	
 	@Override
-	public boolean mouseReleased(Click click) {
-		int button = click.button();
-		
+	public boolean mouseReleased(double mouseX, double mouseY, int button) {
 		if (button == GLFW.GLFW_MOUSE_BUTTON_1) this.mouseDown = false;
-		return super.mouseReleased(click);
+		return super.mouseReleased(mouseX, mouseY, button);
 	}
 	
 	@Override

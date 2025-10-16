@@ -8,29 +8,15 @@ import com.mojang.authlib.GameProfile;
 import me.mxngo.TierNametags;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.util.SkinTextures;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerSkinType;
-import net.minecraft.entity.player.SkinTextures;
-import net.minecraft.util.AssetInfo;
 import net.minecraft.util.Identifier;
 
 public class SkinCache {
 	private static final MinecraftClient mc = MinecraftClient.getInstance();
 	private static HashMap<String, Supplier<SkinTextures>> cache = new HashMap<>();
 	private static HashMap<String, GameProfile> profileCache = new HashMap<>();
-	
-	private static AssetInfo.TextureAsset skinUnknownAsset = new AssetInfo.TextureAsset() {
-		@Override
-		public Identifier id() {
-			return Identifier.of(TierNametags.MODID);
-		}
-
-		@Override
-		public Identifier texturePath() {
-			return Identifier.of(TierNametags.MODID, "textures/entity/skin_unknown.png");
-		}
-	};
 	
 	public static void clear() {
 		cache.clear();
@@ -41,7 +27,7 @@ public class SkinCache {
 	}
 	
 	public static void cachePlayer(AbstractClientPlayerEntity player) {
-		cache.put(player.getGameProfile().name().toLowerCase(), mc.getSkinProvider().supplySkinTextures(player.getGameProfile(), true));
+		cache.put(player.getGameProfile().getName().toLowerCase(), mc.getSkinProvider().getSkinTexturesSupplier(player.getGameProfile()));
 	}
 	
 	public static void cachePlayer(PlayerEntity player) {
@@ -49,8 +35,8 @@ public class SkinCache {
 	}
 	
 	public static void cachePlayer(GameProfile profile) {
-		cache.put(profile.name().toLowerCase(), mc.getSkinProvider().supplySkinTextures(profile, true));
-		profileCache.put(profile.name().toLowerCase(), profile);
+		cache.put(profile.getName().toLowerCase(), mc.getSkinProvider().getSkinTexturesSupplier(profile));
+		profileCache.put(profile.getName().toLowerCase(), profile);
 	}
 	
 	public static void cachePlayer(String name, Supplier<SkinTextures> textureSupplier) {
@@ -58,14 +44,14 @@ public class SkinCache {
 	}
 	
 	public static void cacheProfile(GameProfile profile) {
-		profileCache.put(profile.name().toLowerCase(), profile);
+		profileCache.put(profile.getName().toLowerCase(), profile);
 	}
 	
 	private static SkinTextures getDelegateSkinTextures(String name) {
 		GameProfile profile = getProfile(name);
 		
 		if (profile == null) return null;
-		else return mc.getSkinProvider().supplySkinTextures(profile, true).get();
+		else return mc.getSkinProvider().getSkinTextures(profile);
 	}
 	
 	private static SkinTextures getSkinTextures(String name) {
@@ -81,7 +67,7 @@ public class SkinCache {
 	}
 	
 	public static SkinTextures getPlayer(GameProfile profile) {
-		return getSkinTextures(profile.name().toLowerCase());
+		return getSkinTextures(profile.getName().toLowerCase());
 	}
 	
 	public static SkinTextures getPlayer(PlayerEntity player) {
@@ -93,7 +79,7 @@ public class SkinCache {
 		
 		if (textureSupplier != null)
 			return textureSupplier;
-		else return mc.getSkinProvider().supplySkinTextures(getProfile(name), true);
+		else return mc.getSkinProvider().getSkinTexturesSupplier(getProfile(name));
 	}
 	
 	public static GameProfile getProfile(String name) {
@@ -101,6 +87,10 @@ public class SkinCache {
 	}
 	
 	public static SkinTextures getUnknownSkinTextures() {
-		return new SkinTextures(skinUnknownAsset, null, null, PlayerSkinType.WIDE, true);
+		return new SkinTextures(Identifier.of(TierNametags.MODID, "textures/entity/skin_unknown.png"), null, null, null, SkinTextures.Model.WIDE, true);
+	}
+	
+	public static SkinTextures getUnknownFaceSkinTextures() {
+		return new SkinTextures(Identifier.of(TierNametags.MODID, "textures/entity/skin_face_unknown.png"), null, null, null, SkinTextures.Model.WIDE, true);
 	}
 }

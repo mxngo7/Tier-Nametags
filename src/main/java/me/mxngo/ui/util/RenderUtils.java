@@ -1,7 +1,7 @@
 package me.mxngo.ui.util;
 
 import me.mxngo.TierNametags;
-import net.minecraft.client.gl.RenderPipelines;
+import me.mxngo.ui.screens.ITierNametagsScreen;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.MutableText;
@@ -36,19 +36,19 @@ public class RenderUtils {
 		context.fillGradient(getScaled(x1, iX, screen.width), getScaled(y1, iY, screen.height), getScaled(x2, iX, screen.width), getScaled(y2, iY, screen.height), startColour, stopColour);
 	}
 	
-	public static void renderScaledText(Screen screen, DrawContext context, Text text, int x, int y, int colour, float scale, boolean shadow) {
+	public static <S extends Screen & ITierNametagsScreen> void renderScaledText(S screen, DrawContext context, Text text, int x, int y, int colour, float scale, boolean shadow) {
 		scale *= Math.min((float) screen.width / iX, (float) screen.height / iY);
-		context.getMatrices().pushMatrix();
-		context.getMatrices().scale(scale);
+		context.getMatrices().push();
+		context.getMatrices().scale(scale, scale, scale);
 		context.drawText(screen.getTextRenderer(), text, getScaled((int) (x / scale), iX, screen.width), getScaled((int) (y / scale), iY, screen.height), colour, shadow);
-		context.getMatrices().popMatrix();
+		context.getMatrices().pop();
 	}
 	
-	public static void renderScaledText(Screen screen, DrawContext context, Text text, int x, int y, int colour, float scale) {
+	public static <S extends Screen & ITierNametagsScreen> void renderScaledText(S screen, DrawContext context, Text text, int x, int y, int colour, float scale) {
 		renderScaledText(screen, context, text, x, y, colour, scale, true);
 	}
 	
-	public static void renderScaledTextWithGradient(Screen screen, DrawContext context, Text text, int x, int y, int startColour, int stopColour, float scale, boolean shadow) {
+	public static <S extends Screen & ITierNametagsScreen> void renderScaledTextWithGradient(S screen, DrawContext context, Text text, int x, int y, int startColour, int stopColour, float scale, boolean shadow) {
 		int[] gradient = TierNametags.createGradient(startColour, stopColour, text.getString().length());
 		MutableText newText = Text.empty();
 		
@@ -58,7 +58,7 @@ public class RenderUtils {
 		renderScaledText(screen, context, newText, x, y, 0xFFFFFFFF, scale, shadow);
 	}
 	
-	public static void renderScaledTextWithGradient(Screen screen, DrawContext context, Text text, int x, int y, int startColour, int stopColour, float scale) {
+	public static <S extends Screen & ITierNametagsScreen> void renderScaledTextWithGradient(S screen, DrawContext context, Text text, int x, int y, int startColour, int stopColour, float scale) {
 		renderScaledTextWithGradient(screen, context, text, x, y, startColour, stopColour, scale, true);
 	}
 	
@@ -103,7 +103,7 @@ public class RenderUtils {
 	public static void renderTexture(Screen screen, DrawContext context, Identifier identifier, int x, int y, int width, int height) {
 		width = getScaled(width, iX, screen.width);
 		height = getScaled(height, iY, screen.height);
-		context.drawTexture(RenderPipelines.GUI_TEXTURED, identifier, getScaled(x, iX, screen.width), getScaled(y, iY, screen.height), 0, 0, width, height, width, height);
+		context.drawTexture(identifier, getScaled(x, iX, screen.width), getScaled(y, iY, screen.height), 0, 0, width, height, width, height);
 	}
 	
 	public static void renderTexture(Screen screen, DrawContext context, Identifier identifier, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
@@ -113,7 +113,7 @@ public class RenderUtils {
 		textureHeight = getScaled(textureHeight, iY, screen.height);
 		u = getScaled(u, iX, screen.width);
 		v = getScaled(v, iY, screen.height);
-		context.drawTexture(RenderPipelines.GUI_TEXTURED, identifier, getScaled(x, iX, screen.width), getScaled(y, iY, screen.height), u, v, width, height, textureWidth, textureHeight);
+		context.drawTexture(identifier, getScaled(x, iX, screen.width), getScaled(y, iY, screen.height), u, v, width, height, textureWidth, textureHeight);
 	}
 	
 	public static boolean isMouseHovering(Screen screen, double mouseX, double mouseY, int x1, int y1, int x2, int y2) {
