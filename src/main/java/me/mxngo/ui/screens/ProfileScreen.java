@@ -6,8 +6,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import com.mojang.authlib.GameProfile;
@@ -179,21 +177,8 @@ public class ProfileScreen extends Screen {
     }
     
     private void renderPlayerEntity(DrawContext context, int mouseX, int mouseY) {
-		float theta = (float) -Math.toDegrees((float) Math.atan2(mouseX - this.width / 8, this.height / 2));
-		playerEntity.setHeadYaw(theta);
-		playerEntity.setBodyYaw(theta / 3.5f);
-		
-		if (this.width <= 700 || this.height <= 400) {        	
-			theta = (float) Math.toDegrees((float) Math.atan2(mouseY - this.height / 4, this.width / 8));
-		} else {
-			theta = (float) Math.toDegrees((float) Math.atan2(mouseY - this.height / 3 + 10, this.width / 8));
-		}
-		playerEntity.setPitch(theta / 2);
-		
-		float scale = RenderUtils.getScaled(150f, RenderUtils.iY, this.height);
-		
-		Quaternionf quaternion = new Quaternionf().rotateAxis((float) Math.toRadians(180), new Vector3f(1, 0, 0));
-		InventoryScreen.drawEntity(context, 0, 0, RenderUtils.getScaled(RenderUtils.iX / 4, RenderUtils.iX, this.width), RenderUtils.getScaled(RenderUtils.iY, RenderUtils.iY, this.height), scale, new Vector3f(0, 1f, 0), quaternion, null, playerEntity);
+		int scale = RenderUtils.getScaled(150f, RenderUtils.iY, this.height);
+		InventoryScreen.drawEntity(context, 0, RenderUtils.getScaled(-250, RenderUtils.iY, this.height), RenderUtils.getScaled(RenderUtils.iX / 4, RenderUtils.iX, this.width), RenderUtils.getScaled(RenderUtils.iY, RenderUtils.iY, this.height), scale, 1f, mouseX, mouseY - RenderUtils.getScaled(30, RenderUtils.iY, this.height), playerEntity);
     }
 
     @Override
