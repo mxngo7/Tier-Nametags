@@ -244,7 +244,7 @@ public class TierNametags implements ModInitializer {
                 				source.sendFeedback(getTierNametagsChatLabel().append(" Fetching from ocetiers.net..."));
                 				
                 				OceTiersAPIWrapper.getPlayers().thenAccept(players -> {
-                					source.sendFeedback(getTierNametagsChatLabel().append("Successfully loaded " + players.length + " player profiles"));
+                					source.sendFeedback(getTierNametagsChatLabel().append(" Successfully loaded " + players.length + " player profiles"));
                 					
                 					instance.players = players;
                 					for (TieredPlayer player : players) {				
