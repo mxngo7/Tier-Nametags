@@ -242,7 +242,7 @@ public class TierNametags implements ModInitializer {
                 		.then(literal("refetch_profiles")
                 			.executes(ctx -> {
                 				FabricClientCommandSource source = ctx.getSource();
-                				source.sendFeedback(getTierNametagsChatLabel().append("Fetching from ocetiers.net"));
+                				source.sendFeedback(getTierNametagsChatLabel().append(" Fetching from ocetiers.net..."));
                 				
                 				OceTiersAPIWrapper.getPlayers().thenAccept(players -> {
                 					source.sendFeedback(getTierNametagsChatLabel().append("Successfully loaded " + players.length + " player profiles"));
