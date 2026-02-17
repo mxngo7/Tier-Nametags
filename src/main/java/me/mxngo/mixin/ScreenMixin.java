@@ -168,7 +168,7 @@ public class ScreenMixin {
 	}
 	
 	private void renderLeaderboard(LeaderboardScreen screen, DrawContext context, double mouseX, double mouseY, float delta, Gamemode gamemode, List<TieredPlayer> players) {
-	    if (players == null || players.isEmpty()) return;
+	    if (players == null) return;
 	    
 	    TierNametagsConfig config = instance.getConfig();
 	    
@@ -279,6 +279,12 @@ public class ScreenMixin {
     		
     		screen.setDeltaSinceFoundOwnPlayerSearch(0.0f);
     	} else screen.setDeltaSinceFoundOwnPlayerSearch(screen.getDeltaSinceFoundOwnPlayerSearch() + delta);
+    	
+    	if (players.isEmpty()) {
+    		Text noPlayersFoundText = Text.literal("No players found.");
+    		RenderUtils.renderScaledText(screen, context, noPlayersFoundText, cardXOffset + cardWidth / 2 - screen.getTextRenderer().getWidth(noPlayersFoundText) / 2, cardInitialY + screen.height / 2 - cardHeight - paddingY * 2, 0xFFFFFFFF, 1.0F);
+    		return;
+    	}
 	    
 	    int skipped = 0;
 	    int invisible = 0;
