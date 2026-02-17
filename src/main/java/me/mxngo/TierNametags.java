@@ -48,16 +48,17 @@ import net.minecraft.util.Pair;
 
 public class TierNametags implements ModInitializer {
 	public static final String MODID = "tiernametags";
-	public static final String VERSION = "1.0.2";
+	public static final String LOCALEMODID = "Tier Nametags";
+	public static final String VERSION = "1.0.4";
 	
 	private static TierNametags instance = new TierNametags();
-	private final Logger logger = LoggerFactory.getLogger(MODID);
+	private final Logger logger = LoggerFactory.getLogger(LOCALEMODID);
 	
 	private static MinecraftClient mc;
 	
 	private TieredPlayer[] players = {};
 	private HashMap<String, TieredPlayer> playerMap = new HashMap<>();
-	private Leaderboard leaderboard;
+	private Leaderboard leaderboard = new Leaderboard(players);
 	
 	private KeyBinding cycleGamemodeKeybinding;
 	private KeyBinding cycleGamemodeBackwardsKeybinding;
@@ -115,7 +116,10 @@ public class TierNametags implements ModInitializer {
                                 FabricClientCommandSource source = ctx.getSource();
                                 
                                 boolean playerExists = List.of(instance.players).stream().anyMatch(player -> player.name().equalsIgnoreCase(name));
-                                if (!playerExists) {
+                                if (instance.players.length == 0) {
+                                	source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append("No player profiles found. Is ocetiers.net down?"));
+                                	return 0;
+                                } else if (!playerExists) {
                                 	source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append(name + " does not have an OceTiers profile"));
                                 	return 0;
                                 }
@@ -189,7 +193,10 @@ public class TierNametags implements ModInitializer {
                 						}
                 						
                 						TieredPlayer player = instance.getPlayerCaseInsensitive(playerName);
-                						if (player == null) {
+                						if (instance.players.length == 0) {
+                                        	source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append("No player profiles found. Is ocetiers.net down?"));
+                                        	return 0;
+                                        } else if (player == null) {
                 							source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append(playerName + " does not have an OceTiers profile"));
                 							return 0;
                 						}
@@ -228,6 +235,29 @@ public class TierNametags implements ModInitializer {
                 				SkinCache.cacheWorld(mc.world);
                 				
                 				source.sendFeedback(getTierNametagsChatLabel().append(" Skin cache successfully cleared"));
+                				return 1;
+                			})
+                		)
+                		.then(literal("refetch_profiles")
+                			.executes(ctx -> {
+                				FabricClientCommandSource source = ctx.getSource();
+                				source.sendFeedback(getTierNametagsChatLabel().append(" Fetching from ocetiers.net..."));
+                				
+                				OceTiersAPIWrapper.getPlayers().thenAccept(players -> {
+                					source.sendFeedback(getTierNametagsChatLabel().append(" Successfully loaded " + players.length + " player profiles"));
+                					
+                					instance.players = players;
+                					for (TieredPlayer player : players) {				
+                						instance.playerMap.put(player.name(), player);
+                					}
+                					
+                					instance.leaderboard = new Leaderboard(players);
+                				}).exceptionally(exception -> {
+                					source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append("No player profiles found. Is ocetiers.net down?"));
+                					exception.printStackTrace();
+                					return null;
+                				});
+                				
                 				return 1;
                 			})
                 		)
