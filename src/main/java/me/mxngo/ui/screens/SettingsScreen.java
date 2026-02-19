@@ -9,7 +9,8 @@ import me.mxngo.config.ConfigManager;
 import me.mxngo.config.DisplayType;
 import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.config.TierPosition;
-import me.mxngo.ocetiers.Gamemode;
+import me.mxngo.config.Tierlist;
+import me.mxngo.tiers.Gamemode;
 import me.mxngo.ui.components.ModeComponent;
 import me.mxngo.ui.components.SwitchComponent;
 import me.mxngo.ui.components.TabContentComponent;
@@ -31,6 +32,7 @@ public class SettingsScreen extends Screen implements ITierNametagsScreen {
 	public DisplayModeTabComponent nametagsTabContent, playerListTabContent, chatTabContent;
 	public SwitchComponent<SettingsScreen> reducedMotion;
 	public ModeComponent<Gamemode, SettingsScreen> gamemodeSelector;
+	public ModeComponent<Tierlist, SettingsScreen> tierlistSelector;
 	
 	public SettingsScreen() {
 		super(Text.literal("Settings"));
@@ -170,6 +172,7 @@ public class SettingsScreen extends Screen implements ITierNametagsScreen {
 		
 		gamemodeSelector = new ModeComponent<>(this, List.of(Gamemode.values()), updatedConfig.gamemode, Gamemode::getName, Gamemode::getStyledIcon, RenderUtils.iX / 2 - 152, yOffset + 70);
 		reducedMotion = new SwitchComponent<>(this, Text.literal("Reduced Motion"), RenderUtils.iX / 2 - 152, yOffset + 118, a, b, c, d, e, f, g, h, updatedConfig.reduceMotion);
+		tierlistSelector = new ModeComponent<>(this, List.of(Tierlist.values()), updatedConfig.tierlist, Tierlist::getName, Tierlist::getIcon, RenderUtils.iX / 2 - 152, yOffset + 162);
 	}
 	
 	@Override
@@ -188,6 +191,7 @@ public class SettingsScreen extends Screen implements ITierNametagsScreen {
 		
 		reducedMotion.render(context, mouseX, mouseY, delta);
 		gamemodeSelector.render(context, mouseX, mouseY, delta);
+		tierlistSelector.render(context, mouseX, mouseY, delta);
 	}
 	
 	@Override
@@ -198,7 +202,7 @@ public class SettingsScreen extends Screen implements ITierNametagsScreen {
 		int panelX = RenderUtils.iX / 2 - panelWidth / 2;
 		int panelY = 70;
 		int buttonWidth = (panelWidth - 15) / 3;
-		int panelHeight = 228;
+		int panelHeight = 300; // 228;
 		int buttonColour = 0x40000000;
 		int buttonHoverColour = 0x30000000;
 		int buttonSelectedColour = 0x20000000;
@@ -261,6 +265,7 @@ public class SettingsScreen extends Screen implements ITierNametagsScreen {
 		
 		updatedConfig.gamemode = gamemodeSelector.getMode();
 		updatedConfig.reduceMotion = reducedMotion.isToggled();
+		updatedConfig.tierlist = tierlistSelector.getMode();
 				
 		ConfigManager.getInstance().saveConfig(updatedConfig);
 		this.close();
@@ -274,6 +279,7 @@ public class SettingsScreen extends Screen implements ITierNametagsScreen {
 		
 		reducedMotion.mouseClicked(mouseX, mouseY, button);
 		gamemodeSelector.mouseClicked(mouseX, mouseY, button);
+		tierlistSelector.mouseClicked(mouseX, mouseY, button);
 		
 		int panelWidth = 325;
 		int panelX = RenderUtils.iX / 2 - panelWidth / 2;
@@ -290,7 +296,7 @@ public class SettingsScreen extends Screen implements ITierNametagsScreen {
 		
 		int saveButtonWidth = 70;
 		int saveButtonHeight = 20;
-		int panelHeight = 228;
+		int panelHeight = 300; // 228;
 		
 		boolean hoveringSaveButton = RenderUtils.isMouseHovering(this, mouseX, mouseY, panelX + panelWidth - saveButtonWidth - 5, panelY + panelHeight - saveButtonHeight - 5, panelX + panelWidth - 5, panelY + panelHeight - 5);
 		

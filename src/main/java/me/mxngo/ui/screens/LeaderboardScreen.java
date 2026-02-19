@@ -5,8 +5,8 @@ import java.util.List;
 import org.lwjgl.glfw.GLFW;
 
 import me.mxngo.TierNametags;
-import me.mxngo.ocetiers.Gamemode;
-import me.mxngo.ocetiers.TieredPlayer;
+import me.mxngo.tiers.Gamemode;
+import me.mxngo.tiers.TieredPlayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -164,8 +164,8 @@ public class LeaderboardScreen extends Screen implements ITierNametagsScreen {
 	}
 	
 	private List<TieredPlayer> getPlayers() {
-		if (this.selectedTab == 0) return instance.getLeaderboard().getPlayers();
-		else return instance.getLeaderboard().getPlayers(Gamemode.values()[this.selectedTab - 1]);
+		if (this.selectedTab == 0) return instance.tierlistManager.getActiveLeaderboard().getPlayers();
+		else return instance.tierlistManager.getActiveLeaderboard().getPlayers(Gamemode.values()[this.selectedTab - 1]);
 	}
 	
 	@Override

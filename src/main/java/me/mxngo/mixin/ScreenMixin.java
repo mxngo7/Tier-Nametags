@@ -1,7 +1,10 @@
 package me.mxngo.mixin;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -10,11 +13,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import me.mxngo.TierNametags;
 import me.mxngo.config.TierNametagsConfig;
-import me.mxngo.ocetiers.Gamemode;
-import me.mxngo.ocetiers.Leaderboard;
-import me.mxngo.ocetiers.SkinCache;
-import me.mxngo.ocetiers.Tier;
-import me.mxngo.ocetiers.TieredPlayer;
+import me.mxngo.tiers.Gamemode;
+import me.mxngo.tiers.Leaderboard;
+import me.mxngo.tiers.Leaderboard.LeaderboardEntry;
+import me.mxngo.tiers.SkinCache;
+import me.mxngo.tiers.Tier;
+import me.mxngo.tiers.TieredPlayer;
+import me.mxngo.tiers.wrappers.MCTiersAPIWrapper;
 import me.mxngo.ui.ProfileTheme;
 import me.mxngo.ui.screens.LeaderboardScreen;
 import me.mxngo.ui.screens.ProfileScreen;
@@ -35,10 +40,11 @@ public class ScreenMixin {
 //		if (!screen.isPlayerAnimationPaused()) screen.playerEntity.limbAnimator.updateLimbs(0.35f, 1.0f, 0.035f);
 		
 		TierNametagsConfig config = instance.getConfig();
-		Leaderboard leaderboard = instance.getLeaderboard();
+		Leaderboard leaderboard = instance.tierlistManager.getActiveLeaderboard();
 		TieredPlayer player = instance.getPlayerCaseInsensitive(screen.getPlayerName());
+		boolean isSkeleton = screen.isLoading();
 		
-		ProfileTheme theme = player.getProfileTheme();
+		ProfileTheme theme = isSkeleton ? ProfileTheme.DEFAULT : player.getProfileTheme();
 		int start = theme.getBackgroundStart();
 		int stop = theme.getBackgroundEnd();
 		int borderStart = theme.getBorderStart();
@@ -76,7 +82,7 @@ public class ScreenMixin {
         deltaUntilAnimationComplete = 50;
         int nameTextAnimationOffset = config.reduceMotion ? 0 : distanceToMove - (int) (RenderUtils.easeOut((double) Math.clamp(screen.getAnimationDelta(), 0, deltaUntilAnimationComplete) / deltaUntilAnimationComplete, 4) * distanceToMove);
         
-        Text playerNameAndRankingText = Text.literal(player.name()).append(" (").append(Text.literal("#" + String.valueOf(player.getLeaderboardPosition())).withColor(instance.getLeaderboard().getForegroundColour(player.getLeaderboardPosition()))).append(")");
+        Text playerNameAndRankingText = Text.literal(player.name()).append(" (").append(Text.literal("#" + String.valueOf(player.getLeaderboardPosition())).withColor(leaderboard.getForegroundColour(player.getLeaderboardPosition()))).append(")");
         RenderUtils.renderScaledText(screen, context, playerNameAndRankingText, 305 + nameTextAnimationOffset, 57 - screen.getTextRenderer().fontHeight / 4, 0xFFFFFFFF, 3.0f);
         
         distanceToMove = 15;
@@ -87,31 +93,32 @@ public class ScreenMixin {
         Text pointsText = Text.literal(String.valueOf(player.getLeaderboardPoints())).append(" pts");
         RenderUtils.renderScaledText(screen, context, pointsText, RenderUtils.iX - 50 - ((int) (screen.getTextRenderer().getWidth(pointsText) * 3)) - 20 + ptsTextAnimationOffset, 57 - screen.getTextRenderer().fontHeight / 4, player.getLeaderboardPosition() > 1 ? new Color(leaderboard.getForegroundColour(player.getLeaderboardPosition())).brighter().getRGB() | (0xFF << 24) : leaderboard.getForegroundColour(player.getLeaderboardPosition()), 3.0f);
         
-        // Would have liked this implemented but the OceTiers API /leaderboard endpoint doesn't include 'last_updated' for some reason.
-        // Can implement with /profile endpoint but would need a request for each player. Also the endpoint follows the format /players/{id}/profile
-        // where the id is the player's discord id. Like really?
-//        distanceToMove = 10;
-//        deltaUntilAnimationComplete = 35;
-//        
-//        int lastUpdatedTextAnimationDistanceProgress = distanceToMove - (int) (RenderUtils.easeOut((double) Math.clamp(screen.getAnimationDelta() - 2, 0, deltaUntilAnimationComplete) / deltaUntilAnimationComplete, 4) * distanceToMove);
-//    	  int lastUpdatedTextAnimationOffset = config.reduceMotion ? 0 : -lastUpdatedTextAnimationDistanceProgress;
-//    	
-//        Text lastUpdatedText = Text.literal("Last updated " + player.getDaysSinceLastUpdate() + " day" + (player.getDaysSinceLastUpdate() == 1 ? "" : "s") + " ago");
-//        RenderUtils.renderScaledText(screen, context, lastUpdatedText, RenderUtils.iX - 50 - screen.getTextRenderer().getWidth(lastUpdatedText) - 20 + lastUpdatedTextAnimationOffset, 85 - screen.getTextRenderer().fontHeight / 2, 0xFFe9e9e9, 1.0f);
-        
-        int cardXOffset = 250;
-        int cardYOffset = 100;
+        boolean isMCTiers = instance.tierlistManager.getActiveTierlist().isMCTiers();
+        if (isMCTiers)
+        	RenderUtils.fill(screen, context, 270, 110, RenderUtils.iX - 70, 177, 0x10ffffff);
+
         int cardWidth = (RenderUtils.iX - 360) / 2;
         int cardHeight = 47;
+        int cardXOffset = 250;
+        int cardYOffset = isMCTiers ? cardHeight + 120 : 100;
+        
+        if (isSkeleton) return;
         
         int index = 0;
-        for (Gamemode gamemode : Gamemode.values()) {
+        
+        List<Gamemode> gamemodes = Arrays.asList(Gamemode.values());
+        
+        if (isMCTiers)
+        	gamemodes = Gamemode.getMCTiersGamemodes();
+        
+        for (Gamemode gamemode : gamemodes) {
         	Tier tier = player.getTier(gamemode);
+        	int indexOfSecondColumn = isMCTiers ? 3 : 4;
         	
         	distanceToMove = 7;
         	deltaUntilAnimationComplete = 20;
-        	int cardAnimationDistanceProgress = distanceToMove - (int) (RenderUtils.easeOut((double) Math.clamp(screen.getAnimationDelta() - 2 * (index > 4 ? index - 5 : index), 0, deltaUntilAnimationComplete) / deltaUntilAnimationComplete, 3) * distanceToMove);
-        	int cardAnimationOffset = config.reduceMotion ? 0 : ((index > 4 ? -1 : 1) * cardAnimationDistanceProgress);
+        	int cardAnimationDistanceProgress = distanceToMove - (int) (RenderUtils.easeOut((double) Math.clamp(screen.getAnimationDelta() - 2 * (index > indexOfSecondColumn ? index - (indexOfSecondColumn + 1) : index), 0, deltaUntilAnimationComplete) / deltaUntilAnimationComplete, 3) * distanceToMove);
+        	int cardAnimationOffset = config.reduceMotion ? 0 : ((index > indexOfSecondColumn ? -1 : 1) * cardAnimationDistanceProgress);
         	
         	boolean isHoveringGamemodeCard = RenderUtils.isMouseHovering(screen, mouseX, mouseY, 20 + cardXOffset, 20 + cardYOffset, cardXOffset + cardWidth - 30, 20 + cardYOffset + cardHeight);
         	boolean isHoveringTierCard = RenderUtils.isMouseHovering(screen, mouseX, mouseY, cardXOffset + cardWidth - 30, 20 + cardYOffset, 20 + cardXOffset + cardWidth, 20 + cardYOffset + cardHeight);
@@ -135,8 +142,16 @@ public class ScreenMixin {
         	List<TieredPlayer> gamemodePlayers = leaderboard.getPlayers(gamemode);
         	if (gamemodePlayers.contains(player)) {
         		int rank = gamemodePlayers.indexOf(player) + 1;
-    			Text rankText = Text.literal("(").append(Text.literal("#" + rank).withColor(leaderboard.getForegroundColour(rank))).append(")");
-    			RenderUtils.renderScaledText(screen, context, rankText, 80 + cardXOffset + (int) (screen.getTextRenderer().getWidth(tierText) * 1.2) + cardAnimationOffset, cardYOffset + cardHeight + 2, 0xFFFFFFFF, 1.2f);
+        		
+        		if (isMCTiers) {
+        			if (rank < ((MCTiersAPIWrapper) instance.tierlistManager.getAPIWrapper()).getOffset(gamemode)) {        				
+        				Text rankText = Text.literal("(").append(Text.literal("#" + rank).withColor(leaderboard.getForegroundColour(rank))).append(")");
+        				RenderUtils.renderScaledText(screen, context, rankText, 80 + cardXOffset + (int) (screen.getTextRenderer().getWidth(tierText) * 1.2) + cardAnimationOffset, cardYOffset + cardHeight + 2, 0xFFFFFFFF, 1.2f);
+        			}
+        		} else {
+        			Text rankText = Text.literal("(").append(Text.literal("#" + rank).withColor(leaderboard.getForegroundColour(rank))).append(")");
+        			RenderUtils.renderScaledText(screen, context, rankText, 80 + cardXOffset + (int) (screen.getTextRenderer().getWidth(tierText) * 1.2) + cardAnimationOffset, cardYOffset + cardHeight + 2, 0xFFFFFFFF, 1.2f);
+        		}
         	}
         	
         	if (gamemode.getIconPath() != null) {
@@ -160,15 +175,32 @@ public class ScreenMixin {
         	cardYOffset += cardHeight + 20;
         	index++;
         	
-        	if (index % 5 == 0) {
+        	int gamemodesPerColumn = isMCTiers ? 4 : 5;
+        	if (index % gamemodesPerColumn == 0) {
         		cardXOffset += cardWidth + 20;
-        		cardYOffset = 100;
+        		cardYOffset = isMCTiers ? cardHeight + 120 : 100;
         	}
         }
 	}
 	
-	private void renderLeaderboard(LeaderboardScreen screen, DrawContext context, double mouseX, double mouseY, float delta, Gamemode gamemode, List<TieredPlayer> players) {
-	    if (players == null) return;
+	private void renderLeaderboard(LeaderboardScreen screen, DrawContext context, double mouseX, double mouseY, float delta, Gamemode gamemode, List<LeaderboardEntry> entries) {
+	    if (entries == null) return;
+	    
+	    List<TieredPlayer> players = entries.stream().map(entry -> entry.player()).collect(Collectors.toCollection(ArrayList::new));
+	    
+	    Leaderboard leaderboard = instance.tierlistManager.getActiveLeaderboard();
+	    boolean isMCTiers = instance.tierlistManager.getActiveTierlist().isMCTiers();
+	    
+	    if (gamemode == null) {
+	    	players = new ArrayList<TieredPlayer>(entries.stream().filter(entry ->
+				((LeaderboardEntry) entry).state().isHydrated()
+			).map(entry -> entry.player()).toList());
+	    	
+	    	if (isMCTiers)
+	    		players = players.subList(0, Math.min(players.size(), ((MCTiersAPIWrapper) instance.tierlistManager.getAPIWrapper()).getOffset(gamemode)));
+	    } else if (isMCTiers) {
+	    	players = players.subList(0, Math.min(players.size(), ((MCTiersAPIWrapper) instance.tierlistManager.getAPIWrapper()).getOffset(gamemode)));
+	    }
 	    
 	    TierNametagsConfig config = instance.getConfig();
 	    
@@ -296,7 +328,6 @@ public class ScreenMixin {
 	    		continue;
 	    	}
 
-	    	Leaderboard leaderboard = instance.getLeaderboard();
 	    	rankingColour = leaderboard.getBackgroundColour(index + 1);
 
 	    	TieredPlayer player = players.get(index);
@@ -431,6 +462,13 @@ public class ScreenMixin {
 	        if (!screen.isMouseDown() && screen.isDraggingScrollbar()) {
 	            screen.setIsDraggingScrollbar(false);
 	        }
+	        
+	        double progress = ((double) handleY + handleHeight) / ((double) scrollbarHeight + scrollbarY);
+	        
+	        TierNametags u = TierNametags.getInstance();
+	        if (progress > 0.95 && !u.doingFetch && u.ticksSinceStoppedFetching > 20) {
+//	        	TierNametags.getInstance().doFetch(gamemode);
+	        }
 	    }
 	}
 
@@ -506,10 +544,10 @@ public class ScreenMixin {
 			index++;
 		}
 		
-		if (screen.getSelectedTab() == 0) this.renderLeaderboard(screen, context, mouseX, mouseY, delta, null, instance.getLeaderboard().getPlayers());
+		if (screen.getSelectedTab() == 0) this.renderLeaderboard(screen, context, mouseX, mouseY, delta, null, instance.tierlistManager.getActiveLeaderboard().getEntries());
 		else {
 			Gamemode gamemode = Gamemode.values()[screen.getSelectedTab() - 1];
-			this.renderLeaderboard(screen, context, mouseX, mouseY, delta, gamemode, instance.getLeaderboard().getPlayers(gamemode));
+			this.renderLeaderboard(screen, context, mouseX, mouseY, delta, gamemode, instance.tierlistManager.getActiveLeaderboard().getEntries(gamemode));
 		}
 	}
 	
@@ -520,7 +558,7 @@ public class ScreenMixin {
 		RenderUtils.renderScaledText(screen, context, settingsText, RenderUtils.iX / 2 - screen.getTextRenderer().getWidth(settingsText) / 2 * 3, 25, 0xFFFFFFFF, 3f);
 		
 		int panelWidth = 325;
-		int panelHeight = 228;
+		int panelHeight = 300; //228;
 		int panelX = RenderUtils.iX / 2 - panelWidth / 2;
 		int panelY = 70;
 		
@@ -533,6 +571,10 @@ public class ScreenMixin {
 		
 		RenderUtils.renderScaledText(screen, context, Text.literal("Accessibility"), panelX + 10, accessibilityPanelY + 10, 0xFFFFFFFF, 1.3f);
 		RenderUtils.fill(screen, context, panelX + 5, accessibilityPanelY + 25, panelX + panelWidth - 10, accessibilityPanelY + 45, 0x20000000);
+		
+		int tierlistPanelY = accessibilityPanelY + 45;
+		RenderUtils.renderScaledText(screen, context, Text.literal("Tierlist"), panelX + 10, tierlistPanelY + 10, 0xFFFFFFFF, 1.3f);
+		RenderUtils.fill(screen, context, panelX + 5, tierlistPanelY + 25, panelX + panelWidth - 10, tierlistPanelY + 47, 0x20000000);
 		
 		screen.renderSettings(context, mouseX, mouseY, delta);
 	}

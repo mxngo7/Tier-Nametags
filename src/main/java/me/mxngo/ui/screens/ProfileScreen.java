@@ -17,8 +17,11 @@ import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.mixin.IMinecraftClientAccessor;
 import me.mxngo.mixin.IPlayerSkinWidgetAccessor;
 import me.mxngo.mixin.IUserCacheInvoker;
-import me.mxngo.ocetiers.Gamemode;
-import me.mxngo.ocetiers.SkinCache;
+import me.mxngo.tiers.Gamemode;
+import me.mxngo.tiers.Leaderboard.LeaderboardEntry;
+import me.mxngo.tiers.SkinCache;
+import me.mxngo.tiers.TieredPlayer;
+import me.mxngo.tiers.wrappers.MCTiersAPIWrapper;
 import me.mxngo.ui.util.RenderUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -42,6 +45,7 @@ public class ProfileScreen extends Screen implements ITierNametagsScreen {
 	private TierNametags instance = TierNametags.getInstance();
 	
 	private String playerName;
+	private boolean loading = true;
 	private boolean shouldCache = false;
 	private boolean showLeaderboardButton;
 	private Gamemode leaderboardGamemode = null;
@@ -79,6 +83,8 @@ public class ProfileScreen extends Screen implements ITierNametagsScreen {
          		return false;
          	}
          };
+         
+         this.fetchPlayerProfile();
     }
     
     public ProfileScreen(String playerName) {
@@ -97,10 +103,16 @@ public class ProfileScreen extends Screen implements ITierNametagsScreen {
          		return false;
          	}
         };
+        
+        this.fetchPlayerProfile();
     }
     
     public String getPlayerName() {
     	return this.playerName;
+    }
+    
+    public boolean isLoading() {
+    	return this.loading;
     }
     
     public boolean shouldShowLeaderboardButton() {
@@ -152,6 +164,26 @@ public class ProfileScreen extends Screen implements ITierNametagsScreen {
     	});
     	
     	this.skinTextureSupplier = playerGameProfile.thenApplyAsync(profile -> mc.getSkinProvider().getSkinTexturesSupplier(profile), mc);
+    }
+    
+    private void fetchPlayerProfile() {
+    	LeaderboardEntry entry = instance.tierlistManager.getActiveLeaderboard().getEntry(this.playerName);
+    	if (entry != null && entry.state().isHydrated()) {
+    		this.loading = false;
+    		return;
+    	} else if (instance.tierlistManager.getActiveTierlist().isOceTiers()) {
+    		instance.getLogger().error("Impossible state for LeaderboardEntry");
+    		return;
+    	}
+    	
+    	((MCTiersAPIWrapper) instance.tierlistManager.getAPIWrapper()).getPlayer(this.playerName).thenAccept(player -> {
+    		if (player != null) {
+    			instance.tierlistManager.getActiveLeaderboard().addHydratedPlayers(new TieredPlayer[] { player });
+    			this.loading = false;    			
+    		} else {
+    			this.fetchPlayerProfile();
+    		}
+    	});
     }
     
     @Override
@@ -271,7 +303,7 @@ public class ProfileScreen extends Screen implements ITierNametagsScreen {
         
          if (renderWidget && playerSkinWidget != null) {        	 
         	 playerSkinWidget.render(context, mouseX, mouseY, delta);
-        	 if (!(playerSkinWidget.isHovered() && mouseDown && config.reduceMotion))
+        	 if (!(playerSkinWidget.isHovered() && mouseDown) && !config.reduceMotion)
         		 ((IPlayerSkinWidgetAccessor) playerSkinWidget).setHorizontalRotation(((IPlayerSkinWidgetAccessor) playerSkinWidget).getHorizontalRotation() + 0.05f);
          } else {
         	 renderPlayerEntity(context, mouseX, mouseY);

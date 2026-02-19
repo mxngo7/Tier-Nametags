@@ -188,6 +188,42 @@
       "chars": [
         "\uE017"
       ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/rht1.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE019"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/rlt1.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE01A"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/rht2.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE01B"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/rlt2.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE01C"
+      ]
     }
   ]
 }

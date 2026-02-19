@@ -24,12 +24,11 @@ import me.mxngo.config.ConfigManager;
 import me.mxngo.config.DisplayType;
 import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.config.TierPosition;
-import me.mxngo.ocetiers.Gamemode;
-import me.mxngo.ocetiers.Leaderboard;
-import me.mxngo.ocetiers.OceTiersAPIWrapper;
-import me.mxngo.ocetiers.SkinCache;
-import me.mxngo.ocetiers.Tier;
-import me.mxngo.ocetiers.TieredPlayer;
+import me.mxngo.tiers.Gamemode;
+import me.mxngo.tiers.SkinCache;
+import me.mxngo.tiers.Tier;
+import me.mxngo.tiers.TieredPlayer;
+import me.mxngo.tiers.TierlistManager;
 import me.mxngo.ui.screens.LeaderboardScreen;
 import me.mxngo.ui.screens.ProfileScreen;
 import me.mxngo.ui.screens.SettingsScreen;
@@ -49,16 +48,17 @@ import net.minecraft.util.Pair;
 public class TierNametags implements ModInitializer {
 	public static final String MODID = "tiernametags";
 	public static final String LOCALEMODID = "Tier Nametags";
-	public static final String VERSION = "1.0.4";
+	public static final String VERSION = "1.0.5";
 	
 	private static TierNametags instance = new TierNametags();
 	private final Logger logger = LoggerFactory.getLogger(LOCALEMODID);
 	
 	private static MinecraftClient mc;
 	
+	public TierlistManager tierlistManager;
+	
 	private TieredPlayer[] players = {};
 	private HashMap<String, TieredPlayer> playerMap = new HashMap<>();
-	private Leaderboard leaderboard = new Leaderboard(players);
 	
 	private KeyBinding cycleGamemodeKeybinding;
 	private KeyBinding cycleGamemodeBackwardsKeybinding;
@@ -67,24 +67,15 @@ public class TierNametags implements ModInitializer {
 	
 	private List<Pair<String, CompletableFuture<Supplier<SkinTextures>>>> uncachedTextures = new ArrayList<>();
 	
+	public boolean doingFetch = false;
+	public int ticksSinceStoppedFetching = 0;
+	
 	@Override
 	public void onInitialize() {
 		mc = MinecraftClient.getInstance();
 		
-		OceTiersAPIWrapper.getPlayers().thenAccept(players -> {
-			instance.logger.info("Successfully loaded " + players.length + " player profiles.");
-			
-			instance.players = players;
-			for (TieredPlayer player : players) {				
-				instance.playerMap.put(player.name(), player);
-			}
-			
-			instance.leaderboard = new Leaderboard(players);
-		}).exceptionally(exception -> {
-			instance.logger.error("Failed to load players.");
-			exception.printStackTrace();
-			return null;
-		});
+		instance.tierlistManager = new TierlistManager();
+		instance.tierlistManager.doInitialFetch();
 		
 		instance.cycleGamemodeKeybinding = KeyBindingHelper.registerKeyBinding(
 			new KeyBinding("tiernametags.keybinds.cycle", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "tiernametags.localemodid")
@@ -115,6 +106,7 @@ public class TierNametags implements ModInitializer {
                                 String name = StringArgumentType.getString(ctx, "player");
                                 FabricClientCommandSource source = ctx.getSource();
                                 
+                                // TODO FIX!
                                 boolean playerExists = List.of(instance.players).stream().anyMatch(player -> player.name().equalsIgnoreCase(name));
                                 if (instance.players.length == 0) {
                                 	source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append("No player profiles found. Is ocetiers.net down?"));
@@ -242,23 +234,7 @@ public class TierNametags implements ModInitializer {
                 		.then(literal("refetch_profiles")
                 			.executes(ctx -> {
                 				FabricClientCommandSource source = ctx.getSource();
-                				source.sendFeedback(getTierNametagsChatLabel().append(" Fetching from ocetiers.net..."));
-                				
-                				OceTiersAPIWrapper.getPlayers().thenAccept(players -> {
-                					source.sendFeedback(getTierNametagsChatLabel().append(" Successfully loaded " + players.length + " player profiles"));
-                					
-                					instance.players = players;
-                					for (TieredPlayer player : players) {				
-                						instance.playerMap.put(player.name(), player);
-                					}
-                					
-                					instance.leaderboard = new Leaderboard(players);
-                				}).exceptionally(exception -> {
-                					source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append("No player profiles found. Is ocetiers.net down?"));
-                					exception.printStackTrace();
-                					return null;
-                				});
-                				
+                				instance.tierlistManager.refetchLeaderboard(source);
                 				return 1;
                 			})
                 		)
@@ -270,6 +246,8 @@ public class TierNametags implements ModInitializer {
 	}
 	
 	public void tick() {
+		if (!doingFetch) ticksSinceStoppedFetching++;
+		
 		for (Pair<String, CompletableFuture<Supplier<SkinTextures>>> pair : new ArrayList<>(uncachedTextures)) {
 			if (pair.getRight() == null) uncachedTextures.remove(pair);
 			if (pair.getRight().isDone()) pair.getRight().thenAccept(skinTextureSupplier -> SkinCache.cachePlayer(pair.getLeft(), skinTextureSupplier));
@@ -303,7 +281,7 @@ public class TierNametags implements ModInitializer {
 	}
 	
 	public TieredPlayer getPlayerCaseInsensitive(String name) {
-		for (TieredPlayer player : instance.players) {
+		for (TieredPlayer player : tierlistManager.getActiveLeaderboard().getPlayers()) {
 			if (player.name().equalsIgnoreCase(name)) return player;
 		}
 		
@@ -359,10 +337,6 @@ public class TierNametags implements ModInitializer {
 		}
 	}
 	
-	public Leaderboard getLeaderboard() {
-		return instance.leaderboard;
-	}
-	
 	public Gamemode getSelectedGamemode() {
 		return getConfig().gamemode;
 	}
@@ -395,11 +369,11 @@ public class TierNametags implements ModInitializer {
 		}
 	}
 	
-	private MutableText getTierNametagsChatLabel() {
+	public MutableText getTierNametagsChatLabel() {
 		return (MutableText) Text.literal("[").append(instance.withTextGradient(0xAAFAF4, 0x57ABA5, "TierNametags")).append(Text.literal("]"));
 	}
 	
-	private MutableText getTierNametagsChatLabel(int startColour, int stopColour) {
+	public MutableText getTierNametagsChatLabel(int startColour, int stopColour) {
 		return (MutableText) Text.literal("[").append(instance.withTextGradient(startColour, stopColour, "TierNametags")).append(Text.literal("]"));
 	}
 	
