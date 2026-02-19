@@ -1,5 +1,9 @@
 package me.mxngo.tiers;
 
+import me.mxngo.TierNametags;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+
 public enum Tier {
 	NONE((byte) (0b1 << 5), 0xFFB8B8B8, 0xFFB8B8B8, "textures/font/tiers/unranked.png"),
 	HT((byte) (0b1 << 4), 0xFFFFFFFF, 0xFFFFFFFF),
@@ -68,6 +72,10 @@ public enum Tier {
 	
 	public String getIcon() {
 		return this.icon;
+	}
+	
+	public Text getStyledIcon() {
+		return Text.literal(getIcon()).styled(style -> style.withFont(Identifier.of(TierNametags.MODID, "icons")));
 	}
 	
 	public String getIconPath() {

@@ -7,7 +7,7 @@ import java.util.function.Function;
 import org.lwjgl.glfw.GLFW;
 
 import me.mxngo.ui.IComponent;
-import me.mxngo.ui.screens.ITierNametagsScreen;
+import me.mxngo.ui.ITierNametagsScreen;
 import me.mxngo.ui.util.RenderUtils;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -57,7 +57,7 @@ public class ModeComponent<T, S extends Screen & ITierNametagsScreen> implements
 		RenderUtils.fill(parent, context, x, y, x + 20, y + 14, hoveringLeftCycleButton ? hoverColour : buttonColour);
 		RenderUtils.renderScaledText(parent, context, Text.literal("<"), x + 10 - parent.getTextRenderer().getWidth("<") / 2, y + 7 - parent.getTextRenderer().fontHeight / 2, 0xFFFFFFFF, 1f);
 	
-		MutableText displayText = Text.empty().equals(iconText) ? Text.empty().append(modeName) : Text.empty().append(iconText).append(" ").append(modeName);
+		MutableText displayText = iconText.getString().isEmpty() ? Text.empty().append(modeName) : Text.empty().append(iconText).append(" ").append(modeName);
 		RenderUtils.fill(parent, context, x + 22, y, x + 42 + longestModeName, y + 14, buttonColour);
 		RenderUtils.renderScaledText(parent, context, displayText, x + 32 + longestModeName / 2 - parent.getTextRenderer().getWidth(displayText) / 2, y + 7 - parent.getTextRenderer().fontHeight / 2, 0xFFFFFFFF, 1f);
 		

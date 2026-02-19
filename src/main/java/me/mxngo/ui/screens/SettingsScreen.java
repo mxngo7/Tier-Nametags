@@ -11,6 +11,7 @@ import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.config.TierPosition;
 import me.mxngo.config.Tierlist;
 import me.mxngo.tiers.Gamemode;
+import me.mxngo.ui.ITierNametagsScreen;
 import me.mxngo.ui.components.ModeComponent;
 import me.mxngo.ui.components.SwitchComponent;
 import me.mxngo.ui.components.TabContentComponent;

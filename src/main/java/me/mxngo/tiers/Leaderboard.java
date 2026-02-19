@@ -3,6 +3,7 @@ package me.mxngo.tiers;
 import java.awt.Color;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -13,13 +14,19 @@ import me.mxngo.TierNametags;
 public class Leaderboard {
 	private Logger logger;
 	private final ConcurrentHashMap<String, LeaderboardEntry> players = new ConcurrentHashMap<>();
+	private final String name;
 	
 	public Leaderboard(String name) {
-		this.logger = LoggerFactory.getLogger(TierNametags.LOCALEMODID.concat("/").concat(name).concat("Leaderboard"));
+		this.name = name;
+		this.logger = LoggerFactory.getLogger(TierNametags.LOCALEMODID.concat("/").concat(name).concat(" Leaderboard"));
 	}
 	
 	public Logger getLogger() {
 		return this.logger;
+	}
+	
+	public String getName() {
+		return this.name;
 	}
 	
 	public List<LeaderboardEntry> getEntries() {
@@ -72,6 +79,15 @@ public class Leaderboard {
 	
 	public LeaderboardEntry getEntry(TieredPlayer player) {
 		return getEntry(player.name());
+	}
+	
+	public LeaderboardEntry getEntryIgnoreCase(String name) {
+		return players.entrySet()
+			    .stream()
+			    .filter(e -> e.getKey().equalsIgnoreCase(name))
+			    .map(Map.Entry::getValue)
+			    .findFirst()
+			    .orElse(null);
 	}
 	
 	public HydrationState getState(TieredPlayer player) {

@@ -224,6 +224,24 @@
       "chars": [
         "\uE01C"
       ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/ocetiers.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE01D"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "tiernametags:font/tiers/mctiers.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE01E"
+      ]
     }
   ]
 }

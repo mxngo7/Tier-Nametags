@@ -9,11 +9,11 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 public class TierlistManager {
 	private final TierNametags tierNametags = TierNametags.getInstance();
 	
-	private final OceTiersAPIWrapper oceTiersAPIWrapper = new OceTiersAPIWrapper();
 	private final Leaderboard oceTiersLeaderboard = new Leaderboard("OceTiers");
-	
-	private final MCTiersAPIWrapper mcTiersAPIWrapper = new MCTiersAPIWrapper(this);
 	private final Leaderboard mcTiersLeaderboard = new Leaderboard("MCTiers");
+	
+	private final OceTiersAPIWrapper oceTiersAPIWrapper = new OceTiersAPIWrapper();
+	private final MCTiersAPIWrapper mcTiersAPIWrapper = new MCTiersAPIWrapper(this);
 	
 	public void doInitialFetch() {
 		fetchOceTiersPlayers();
@@ -52,11 +52,11 @@ public class TierlistManager {
 		}
 	}
 	
-	private void fetchMCTiersPlayers() {
+	public void fetchMCTiersPlayers() {
 		fetchMCTiersPlayers(null);
 	}
 	
-	private void fetchMCTiersGamemode(Gamemode gamemode, FabricClientCommandSource source) {
+	public void fetchMCTiersGamemode(Gamemode gamemode, FabricClientCommandSource source) {
 		int from = mcTiersAPIWrapper.getOffset(gamemode);
 		
 		mcTiersAPIWrapper.getPlayers(from, gamemode).thenAccept(players -> {

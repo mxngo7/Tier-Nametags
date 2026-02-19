@@ -1,7 +1,7 @@
 package me.mxngo.ui.util;
 
 import me.mxngo.TierNametags;
-import me.mxngo.ui.screens.ITierNametagsScreen;
+import me.mxngo.ui.ITierNametagsScreen;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.MutableText;
@@ -118,5 +118,18 @@ public class RenderUtils {
 	
 	public static boolean isMouseHovering(Screen screen, double mouseX, double mouseY, int x1, int y1, int x2, int y2) {
 		return mouseX >= getScaled(x1, iX, screen.width) && mouseX <= getScaled(x2, iX, screen.width) && mouseY >= getScaled(y1, iY, screen.height) && mouseY <= getScaled(y2, iY, screen.height);
+	}
+	
+	public static int darken(int color, float factor) {
+	    int a = (color >> 24) & 0xFF;
+	    int r = (color >> 16) & 0xFF;
+	    int g = (color >> 8) & 0xFF;
+	    int b = color & 0xFF;
+
+	    r *= factor;
+	    g *= factor;
+	    b *= factor;
+
+	    return (a << 24) | (r << 16) | (g << 8) | b;
 	}
 }

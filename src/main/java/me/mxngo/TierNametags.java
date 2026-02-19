@@ -6,7 +6,6 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.lit
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -25,10 +24,13 @@ import me.mxngo.config.DisplayType;
 import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.config.TierPosition;
 import me.mxngo.tiers.Gamemode;
+import me.mxngo.tiers.Leaderboard;
+import me.mxngo.tiers.Leaderboard.LeaderboardEntry;
 import me.mxngo.tiers.SkinCache;
 import me.mxngo.tiers.Tier;
 import me.mxngo.tiers.TieredPlayer;
 import me.mxngo.tiers.TierlistManager;
+import me.mxngo.tiers.wrappers.MCTiersAPIWrapper;
 import me.mxngo.ui.screens.LeaderboardScreen;
 import me.mxngo.ui.screens.ProfileScreen;
 import me.mxngo.ui.screens.SettingsScreen;
@@ -57,19 +59,13 @@ public class TierNametags implements ModInitializer {
 	
 	public TierlistManager tierlistManager;
 	
-	private TieredPlayer[] players = {};
-	private HashMap<String, TieredPlayer> playerMap = new HashMap<>();
-	
 	private KeyBinding cycleGamemodeKeybinding;
 	private KeyBinding cycleGamemodeBackwardsKeybinding;
 	private KeyBinding leaderboardKeybinding;
 	private KeyBinding settingsKeybinding;
 	
 	private List<Pair<String, CompletableFuture<Supplier<SkinTextures>>>> uncachedTextures = new ArrayList<>();
-	
-	public boolean doingFetch = false;
-	public int ticksSinceStoppedFetching = 0;
-	
+
 	@Override
 	public void onInitialize() {
 		mc = MinecraftClient.getInstance();
@@ -106,13 +102,32 @@ public class TierNametags implements ModInitializer {
                                 String name = StringArgumentType.getString(ctx, "player");
                                 FabricClientCommandSource source = ctx.getSource();
                                 
-                                // TODO FIX!
-                                boolean playerExists = List.of(instance.players).stream().anyMatch(player -> player.name().equalsIgnoreCase(name));
-                                if (instance.players.length == 0) {
-                                	source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append("No player profiles found. Is ocetiers.net down?"));
+                                Leaderboard currentLeaderboard = instance.tierlistManager.getActiveLeaderboard();
+                                LeaderboardEntry entry = currentLeaderboard.getEntryIgnoreCase(name);
+                                
+                                boolean playerExists = entry != null && entry.state().isHydrated();
+                                if (currentLeaderboard.getPlayers().isEmpty()) {
+                                	source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append("No player profiles found. Is ").append(currentLeaderboard.getName()).append(" offline?"));
                                 	return 0;
                                 } else if (!playerExists) {
-                                	source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append(name + " does not have an OceTiers profile"));
+                                	if (instance.tierlistManager.getActiveTierlist().isMCTiers()) {
+                                		((MCTiersAPIWrapper) instance.tierlistManager.getAPIWrapper()).getPlayer(name).thenAccept(player -> {
+                                			if (player == null) return;
+                                			
+                                			instance.tierlistManager.getActiveLeaderboard().addHydratedPlayers(new TieredPlayer[] { player });
+                                			
+                                			MinecraftClient mc = MinecraftClient.getInstance();
+                        					mc.send(() -> {
+                        						mc.setScreen(new ProfileScreen(name));
+                        					});
+                                		}).exceptionally(exception -> {
+                                			source.sendError(TierNametags.getInstance().getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append(name)
+                            						.append(" does not have a profile on ").append(TierNametags.getInstance().tierlistManager.getActiveLeaderboard().getName()).append("."));
+                                			return null;
+                                		});
+                                	} else {
+                                		source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append(name).append(" does not have a profile on ").append(currentLeaderboard.getName()).append("."));
+                                	}
                                 	return 0;
                                 }
                                 
@@ -180,17 +195,18 @@ public class TierNametags implements ModInitializer {
                 						
                 						Gamemode gamemode = Gamemode.fromCommandString(gamemodeName);
                 						if (gamemode == null) {
-                							source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append("Gamemode " + gamemodeName + " does not exist"));
+                							source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append("Gamemode " + gamemodeName + " does not exist."));
                 							return 0;
                 						}
                 						
+                						Leaderboard currentLeaderboard = instance.tierlistManager.getActiveLeaderboard();
                 						TieredPlayer player = instance.getPlayerCaseInsensitive(playerName);
                 						
-                						if (instance.players.length == 0) {
-                                        	source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append("No player profiles found. Is ocetiers.net down?"));
+                						if (currentLeaderboard.getPlayers().isEmpty()) {
+                                        	source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append("No player profiles found. Is ").append(currentLeaderboard.getName()).append(" offline?"));
                                         	return 0;
                                         } else if (player == null) {
-                							source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append(playerName + " does not have an OceTiers profile"));
+                							source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append(playerName).append(" does not have a profile on ").append(currentLeaderboard.getName()).append("."));
                 							return 0;
                 						}
                 						
@@ -246,8 +262,6 @@ public class TierNametags implements ModInitializer {
 	}
 	
 	public void tick() {
-		if (!doingFetch) ticksSinceStoppedFetching++;
-		
 		for (Pair<String, CompletableFuture<Supplier<SkinTextures>>> pair : new ArrayList<>(uncachedTextures)) {
 			if (pair.getRight() == null) uncachedTextures.remove(pair);
 			if (pair.getRight().isDone()) pair.getRight().thenAccept(skinTextureSupplier -> SkinCache.cachePlayer(pair.getLeft(), skinTextureSupplier));
@@ -272,24 +286,17 @@ public class TierNametags implements ModInitializer {
 		return instance.logger;
 	}
 	
-	public TieredPlayer[] getPlayers() {
-		return instance.players;
-	}
-	
-	public TieredPlayer getPlayer(String name) {
-		return instance.playerMap.get(name);
-	}
-	
 	public TieredPlayer getPlayerCaseInsensitive(String name) {
 		for (TieredPlayer player : tierlistManager.getActiveLeaderboard().getPlayers()) {
-			if (player.name().equalsIgnoreCase(name)) return player;
+			if (player.name().equalsIgnoreCase(name))
+				return player;
 		}
 		
 		return null;
 	}
 	
 	public MutableText getComponent(String name, DisplayType displayType) {
-		TieredPlayer player = instance.getPlayer(name);
+		TieredPlayer player = instance.getPlayerCaseInsensitive(name);
 		if (player == null) return null;
 		
 		Gamemode gamemode = instance.getSelectedGamemode();

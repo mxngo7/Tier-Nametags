@@ -5,7 +5,7 @@ import org.lwjgl.glfw.GLFW;
 import me.mxngo.TierNametags;
 import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.ui.IComponent;
-import me.mxngo.ui.screens.ITierNametagsScreen;
+import me.mxngo.ui.ITierNametagsScreen;
 import me.mxngo.ui.util.RenderUtils;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;

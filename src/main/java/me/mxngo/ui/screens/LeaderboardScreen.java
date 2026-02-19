@@ -1,12 +1,16 @@
 package me.mxngo.ui.screens;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.lwjgl.glfw.GLFW;
 
 import me.mxngo.TierNametags;
+import me.mxngo.config.ConfigManager;
+import me.mxngo.config.Tierlist;
 import me.mxngo.tiers.Gamemode;
 import me.mxngo.tiers.TieredPlayer;
+import me.mxngo.ui.ITierNametagsScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -37,6 +41,11 @@ public class LeaderboardScreen extends Screen implements ITierNametagsScreen {
 	private float sidebarEntriesAnimationDelta = 0.0f;
 	
 	private String playerToFind = "";
+	
+	public boolean requestedNextPage = false;
+	public int ticksSinceNextPageRequested = 0;
+	
+	public int ticksSinceSwitchedTierlists = 0;
 	
 	public LeaderboardScreen() {
 		super(Text.literal("Leaderboard"));
@@ -168,10 +177,46 @@ public class LeaderboardScreen extends Screen implements ITierNametagsScreen {
 		else return instance.tierlistManager.getActiveLeaderboard().getPlayers(Gamemode.values()[this.selectedTab - 1]);
 	}
 	
+	public int getNextTierlistIndex() {
+		Tierlist currentTierlist = instance.tierlistManager.getActiveTierlist();
+		int index = Arrays.asList(Tierlist.values()).indexOf(currentTierlist);
+		
+		if (index >= Tierlist.values().length - 1)
+			return 0;
+		return index + 1;
+	}
+	
+	public int getPreviousTierlistIndex() {
+		Tierlist currentTierlist = instance.tierlistManager.getActiveTierlist();
+		int index = Arrays.asList(Tierlist.values()).indexOf(currentTierlist);
+		
+		if (index <= 0)
+			return Tierlist.values().length - 1;
+		return index - 1;
+	}
+	
+	public void onSwitchTierlist() {
+		if (this.ticksSinceSwitchedTierlists < 4) return;
+		this.ticksSinceSwitchedTierlists = 0;
+		
+		int index = getNextTierlistIndex();
+		
+		instance.getConfig().tierlist = Tierlist.values()[index];
+		ConfigManager.getInstance().saveConfig();
+	}
+	
 	@Override
     protected void init() {
     	super.init();
     }
+	
+	@Override
+	public void tick() {
+		super.tick();
+		if (this.requestedNextPage)
+			this.ticksSinceNextPageRequested++;
+		this.ticksSinceSwitchedTierlists++;
+	}
 	
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {

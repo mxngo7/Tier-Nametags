@@ -22,6 +22,7 @@ import me.mxngo.tiers.Leaderboard.LeaderboardEntry;
 import me.mxngo.tiers.SkinCache;
 import me.mxngo.tiers.TieredPlayer;
 import me.mxngo.tiers.wrappers.MCTiersAPIWrapper;
+import me.mxngo.ui.ITierNametagsScreen;
 import me.mxngo.ui.util.RenderUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -167,11 +168,12 @@ public class ProfileScreen extends Screen implements ITierNametagsScreen {
     }
     
     private void fetchPlayerProfile() {
-    	LeaderboardEntry entry = instance.tierlistManager.getActiveLeaderboard().getEntry(this.playerName);
+    	LeaderboardEntry entry = instance.tierlistManager.getActiveLeaderboard().getEntryIgnoreCase(this.playerName);
+
     	if (entry != null && entry.state().isHydrated()) {
     		this.loading = false;
     		return;
-    	} else if (instance.tierlistManager.getActiveTierlist().isOceTiers()) {
+    	} else if (entry != null && instance.tierlistManager.getActiveTierlist().isOceTiers()) {
     		instance.getLogger().error("Impossible state for LeaderboardEntry");
     		return;
     	}
@@ -179,7 +181,7 @@ public class ProfileScreen extends Screen implements ITierNametagsScreen {
     	((MCTiersAPIWrapper) instance.tierlistManager.getAPIWrapper()).getPlayer(this.playerName).thenAccept(player -> {
     		if (player != null) {
     			instance.tierlistManager.getActiveLeaderboard().addHydratedPlayers(new TieredPlayer[] { player });
-    			this.loading = false;    			
+    			this.loading = false;
     		} else {
     			this.fetchPlayerProfile();
     		}

@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
@@ -20,6 +19,7 @@ import me.mxngo.tiers.Gamemode;
 import me.mxngo.tiers.Leaderboard;
 import me.mxngo.tiers.Leaderboard.LeaderboardEntry;
 import me.mxngo.tiers.Tier;
+import me.mxngo.tiers.TierTest;
 import me.mxngo.tiers.TieredPlayer;
 import me.mxngo.tiers.TierlistManager;
 
@@ -28,8 +28,6 @@ public class MCTiersAPIWrapper extends APIWrapper {
 	public String getApiUrl() {
 		return "https://mctiers.com/api/v2";
 	}
-	
-	private final ConcurrentHashMap<Endpoint, Boolean> inProgressRequests = new ConcurrentHashMap<>();
 	
 	private final Type GamemodeResponseType = new TypeToken<Map<String, List<PlayerResponseFromGamemode>>>() {}.getType();
 	
@@ -75,14 +73,13 @@ public class MCTiersAPIWrapper extends APIWrapper {
 			}
 			
 			long metadata = tierData[1];
-			metadata = (metadata & ~(0xFFFFL << 16)) | ((long) (players.size() + 1) << 16);
+			metadata = (metadata & ~(0xFFFFL << 16)) | ((long) (overallOffset - 50 + players.size() + 1) << 16);
 			metadata = (metadata & ~(0xFFFFL << 32)) | ((long) playerResponse.leaderboardPoints() << 32);
 			tierData[1] = metadata;
 			
 			players.add(new TieredPlayer(playerResponse.username(), tierData));
 		}
 		
-		inProgressRequests.put(Endpoint.OVERALL, false);
 		return players.toArray(new TieredPlayer[0]);
 	}
 	
@@ -103,7 +100,6 @@ public class MCTiersAPIWrapper extends APIWrapper {
 			}
 		}
 		
-		inProgressRequests.put(gamemodeToEndpoint(gamemode), false);
 		return players.toArray(new TieredPlayer[0]);
 	}
 	
@@ -124,20 +120,40 @@ public class MCTiersAPIWrapper extends APIWrapper {
 		}
 		
 		long metadata = tierData[1];
-		metadata = (metadata & ~(0xFFFFL << 16)) | ((long) data.leaderboardPosition() << 16);
-		metadata = (metadata & ~(0xFFFFL << 32)) | ((long) data.leaderboardPoints() << 32);
+		metadata = (metadata & ~(0xFFFFL << 16)) | (((long) data.leaderboardPosition()) << 16);
+		metadata = (metadata & ~(0xFFFFL << 32)) | (((long) data.leaderboardPoints()) << 32);
 		tierData[1] = metadata;
 		
-		inProgressRequests.put(Endpoint.PROFILE_BY_NAME, false);
 		return new TieredPlayer(data.username(), tierData);
 	}
 	
+	private TierTest[] parseTierTests(String body) {
+		ProfileWithTestsResponse data = gson.fromJson(body, ProfileWithTestsResponse.class);
+		
+		if (data == null)
+			return new TierTest[] {};
+		
+		ArrayList<TierTest> tierTests = new ArrayList<>();
+		
+		for (TierTestResponse testData : data.tests()) {
+			Gamemode gamemode = gamemodeMap.get(testData.gamemode());
+			byte resultTierPos = testData.resultPos() == 0 ? Tier.HT.getValue() : Tier.LT.getValue();
+			Tier result = Tier.fromValue((byte) (resultTierPos | testData.resultTier()));
+			Tier prev;
+			if (testData.prevPos() == null || testData.prevTier() == null) {				
+				prev = Tier.NONE;
+			} else {
+				byte prevTierPos = testData.prevPos() == 0 ? Tier.HT.getValue() : Tier.LT.getValue();
+				prev = Tier.fromValue((byte) (prevTierPos | testData.prevTier()));
+			}
+			
+			tierTests.add(new TierTest(data.username(), testData.tester().get("name"), gamemode, result, prev, testData.timestamp()));
+		}
+		
+		return tierTests.toArray(new TierTest[0]);
+	}
+	
 	public CompletableFuture<TieredPlayer[]> getPlayers(int from, Gamemode gamemode) {
-		if (inProgressRequests.getOrDefault(gamemodeToEndpoint(gamemode), false))
-			return CompletableFuture.completedFuture(new TieredPlayer[] {});
-		
-		inProgressRequests.put(gamemodeToEndpoint(gamemode), true);
-		
 		if (gamemode == null)
 			overallOffset += 50;
 		else
@@ -169,21 +185,28 @@ public class MCTiersAPIWrapper extends APIWrapper {
 	}
 	
 	public CompletableFuture<TieredPlayer> getPlayer(String name) {
-		if (inProgressRequests.getOrDefault(Endpoint.PROFILE_BY_NAME, false))
-			return CompletableFuture.completedFuture(null);
-		
 		LeaderboardEntry entry = leaderboard.getEntry(name);
 		if (entry != null && entry.state().isHydrated())
 			return CompletableFuture.completedFuture(entry.player());
-		
-		inProgressRequests.put(Endpoint.PROFILE_BY_NAME, true);
-		
+
 		CompletableFuture<HttpResponse<String>> httpResponse = fetch(Endpoint.PROFILE_BY_NAME, name);
 		CompletableFuture<TieredPlayer> player = httpResponse
 			.thenApply(HttpResponse::body)
 			.thenApply(this::parsePlayerProfile);
 		
 		return player;
+	}
+	
+	public CompletableFuture<TierTest[]> getTierTests(TieredPlayer player) {
+		LeaderboardEntry entry = leaderboard.getEntry(player);
+		if (entry == null) return CompletableFuture.completedFuture(new TierTest[] {});
+		
+		CompletableFuture<HttpResponse<String>> httpResponse = fetch(Endpoint.PROFILE_BY_NAME_TESTS, player.name());
+		CompletableFuture<TierTest[]> tests = httpResponse
+			.thenApply(HttpResponse::body)
+			.thenApply(this::parseTierTests);
+		
+		return tests;
 	}
 	
 	private Endpoint gamemodeToEndpoint(Gamemode gamemode) {
@@ -221,7 +244,8 @@ public class MCTiersAPIWrapper extends APIWrapper {
 		VANILLA("/mode/vanilla?from=%s&count=50"),
 		MACE("/mode/mace?from=%s&count=50"),
 		
-		PROFILE_BY_NAME("/profile/by-name/%s");
+		PROFILE_BY_NAME("/profile/by-name/%s"),
+		PROFILE_BY_NAME_TESTS("/profile/by-name/%s?tests");
 		
 		private final String path;
 		
@@ -266,4 +290,20 @@ public class MCTiersAPIWrapper extends APIWrapper {
 		@SerializedName("overall") int leaderboardPosition,
 		@SerializedName("rankings") Map<String, GamemodeDataResponse> gamemodes
 	) {}
+	
+	private record TierTestResponse(
+		@SerializedName("tester") Map<String, String> tester,
+		@SerializedName("gamemode") String gamemode,
+		@SerializedName("result_tier") int resultTier,
+		@SerializedName("result_pos") int resultPos,
+		@SerializedName("prev_tier") Integer prevTier,
+		@SerializedName("prev_pos") Integer prevPos,
+		@SerializedName("at") int timestamp
+	) {}
+	
+	private record ProfileWithTestsResponse(
+		@SerializedName("name") String username,
+		@SerializedName("tests") TierTestResponse[] tests
+	) {}
+	
 }
