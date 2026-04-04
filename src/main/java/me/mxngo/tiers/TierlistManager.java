@@ -2,8 +2,9 @@ package me.mxngo.tiers;
 
 import me.mxngo.TierNametags;
 import me.mxngo.config.Tierlist;
-import me.mxngo.tiers.wrappers.MCTiersAPIWrapper;
-import me.mxngo.tiers.wrappers.OceTiersAPIWrapper;
+import me.mxngo.http.APIWrapper;
+import me.mxngo.http.wrappers.MCTiersAPIWrapper;
+import me.mxngo.http.wrappers.OceTiersAPIWrapper;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 
 public class TierlistManager {

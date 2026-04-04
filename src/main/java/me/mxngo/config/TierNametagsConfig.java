@@ -1,13 +1,13 @@
 package me.mxngo.config;
 
-import me.mxngo.TierNametags;
 import me.mxngo.tiers.Gamemode;
+import me.mxngo.update.VersionChecker;
 
 public class TierNametagsConfig {
-	public String version = TierNametags.VERSION;
+	public String version = VersionChecker.getCurrentVersion();
 	
 	public Gamemode gamemode = Gamemode.SWORD;
-	public Tierlist tierlist = Tierlist.OCETIERS;
+	public Tierlist tierlist = Tierlist.MCTIERS;
 	
 	public DisplayType nametags = new DisplayType(true, true, true, false, TierPosition.LEFT);
 	public DisplayType playerList = new DisplayType(false, true, true, false, TierPosition.LEFT);

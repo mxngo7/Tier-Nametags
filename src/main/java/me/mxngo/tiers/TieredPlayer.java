@@ -10,7 +10,7 @@ import com.google.gson.annotations.SerializedName;
 
 import me.mxngo.ui.ProfileTheme;
 
-public record TieredPlayer(@SerializedName("name") String name, @SerializedName("data") long[] data) {
+public record TieredPlayer(@SerializedName("name") String name, @SerializedName("data") long[] data, Region region) {
 	private static final LocalDate epoch = LocalDate.of(2000, 1, 1);
 	
 	public Tier getTier(Gamemode gamemode) {
@@ -22,8 +22,8 @@ public record TieredPlayer(@SerializedName("name") String name, @SerializedName(
 	
 	public TieredPlayer with(Gamemode gamemode, Tier tier) {
 		return switch (gamemode) {
-			case Gamemode.CART, Gamemode.MACE -> new TieredPlayer(this.name, new long[] {this.data[0], tier.applyTo(gamemode, this.data[1])});
-			default -> new TieredPlayer(this.name, new long[] {tier.applyTo(gamemode, this.data[0]), this.data[1]});
+			case Gamemode.CART, Gamemode.MACE -> new TieredPlayer(this.name, new long[] {this.data[0], tier.applyTo(gamemode, this.data[1])}, this.region());
+			default -> new TieredPlayer(this.name, new long[] {tier.applyTo(gamemode, this.data[0]), this.data[1]}, this.region());
 		};
 	}
 	

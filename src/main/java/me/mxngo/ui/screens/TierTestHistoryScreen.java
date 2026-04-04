@@ -2,9 +2,9 @@ package me.mxngo.ui.screens;
 
 import me.mxngo.TierNametags;
 import me.mxngo.config.Tierlist;
+import me.mxngo.http.wrappers.MCTiersAPIWrapper;
 import me.mxngo.tiers.TierTest;
 import me.mxngo.tiers.TieredPlayer;
-import me.mxngo.tiers.wrappers.MCTiersAPIWrapper;
 import me.mxngo.ui.ITierNametagsScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

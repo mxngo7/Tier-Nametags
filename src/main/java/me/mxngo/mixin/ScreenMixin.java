@@ -18,14 +18,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import me.mxngo.TierNametags;
 import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.config.Tierlist;
+import me.mxngo.http.wrappers.MCTiersAPIWrapper;
 import me.mxngo.tiers.Gamemode;
 import me.mxngo.tiers.Leaderboard;
 import me.mxngo.tiers.Leaderboard.LeaderboardEntry;
+import me.mxngo.tiers.Region;
 import me.mxngo.tiers.SkinCache;
 import me.mxngo.tiers.Tier;
 import me.mxngo.tiers.TierTest;
 import me.mxngo.tiers.TieredPlayer;
-import me.mxngo.tiers.wrappers.MCTiersAPIWrapper;
 import me.mxngo.ui.ProfileTheme;
 import me.mxngo.ui.screens.LeaderboardScreen;
 import me.mxngo.ui.screens.ProfileScreen;
@@ -42,7 +43,7 @@ import net.minecraft.util.math.MathHelper;
 
 @Mixin(Screen.class)
 public class ScreenMixin {
-	private TierNametags instance = TierNametags.getInstance();
+	private final TierNametags instance = TierNametags.getInstance();
 	
 	private void renderProfileScreen(ProfileScreen screen, DrawContext context, int mouseX, int mouseY, float delta) {
 //		if (!screen.isPlayerAnimationPaused()) screen.playerEntity.limbAnimator.updateLimbs(0.35f, 1.0f, 0.035f);
@@ -103,10 +104,12 @@ public class ScreenMixin {
         
         boolean isMCTiers = instance.tierlistManager.getActiveTierlist().isMCTiers();
         if (isMCTiers) {
+        	Region region = player.region();
+
         	int mctPanelX = 270;
         	int mctPanelY = 110;
         	int mctPanelWidth = RenderUtils.iX - 70 - mctPanelX;
-        	int mctPanelHeight = 177 - mctPanelY;
+        	int mctPanelHeight = 140 - mctPanelY;
         	
         	int hoveringButtonColourStart = theme.getBorderStart();
         	int hoveringButtonColourEnd = theme.getBorderEnd();
@@ -117,11 +120,28 @@ public class ScreenMixin {
         	
         	RenderUtils.fill(screen, context, mctPanelX, mctPanelY, mctPanelX + mctPanelWidth, mctPanelY + mctPanelHeight, 0x10ffffff);
         	
+        	int regionButtonX = mctPanelX + 5;
+        	int regionButtonY = mctPanelY + 5;
+        	
+        	Text regionText = Text.literal(region.getName());
+        	float regionTextScale = 1.0f;
+        	float regionTextHeight = screen.getTextRenderer().fontHeight * regionTextScale;
+
+        	int regionButtonTextHorizontalPadding = 8;
+        	int regionButtonWidth = (int) (screen.getTextRenderer().getWidth(regionText) * regionTextScale) + 2 * regionButtonTextHorizontalPadding;
+        	int regionButtonHeight = 20;
+        	boolean hoveringRegionButton = RenderUtils.isMouseHovering(screen, mouseX, mouseY, regionButtonX, regionButtonY, regionButtonX + regionButtonWidth, regionButtonY + regionButtonHeight, false);
+        	
+        	RenderUtils.fillGradient(screen, context, regionButtonX, regionButtonY, regionButtonX + regionButtonWidth, regionButtonY + regionButtonHeight, hoveringRegionButton ? hoveringButtonColourStart : buttonColourStart, hoveringRegionButton ? hoveringButtonColourEnd : buttonColourEnd);
+        	RenderUtils.renderBorder(screen, context, regionButtonX, regionButtonY, regionButtonWidth, regionButtonHeight, hoveringRegionButton ? hoveringBorderColour : borderColour);
+        	
+        	RenderUtils.renderScaledText(screen, context, regionText, regionButtonX + regionButtonTextHorizontalPadding, regionButtonY + (int) ((regionButtonHeight - regionTextHeight) / 2f) + 1, 0xFFFFFFFF, 1.0f);
+        	
         	Text testsButtonText = Text.literal("Tier Test History");
         	float testsButtonTextScale = 1.0f;
         	float testsButtonTextHeight = screen.getTextRenderer().fontHeight * testsButtonTextScale;
-        	int testsButtonX = mctPanelX + 5;
-        	int testsButtonY = mctPanelY + 5;
+        	int testsButtonX = regionButtonX + regionButtonWidth + 5;
+        	int testsButtonY = regionButtonY;
         	int testsButtonTextHorizontalPadding = 8;
         	int testsButtonWidth = (int) (screen.getTextRenderer().getWidth(testsButtonText) * testsButtonTextScale) + 2 * testsButtonTextHorizontalPadding;
         	int testsButtonHeight = 20;
@@ -130,7 +150,7 @@ public class ScreenMixin {
         	RenderUtils.fillGradient(screen, context, testsButtonX, testsButtonY, testsButtonX + testsButtonWidth, testsButtonY + testsButtonHeight, hoveringTestsButton ? hoveringButtonColourStart : buttonColourStart, hoveringTestsButton ? hoveringButtonColourEnd : buttonColourEnd);
         	RenderUtils.renderBorder(screen, context, testsButtonX, testsButtonY, testsButtonWidth, testsButtonHeight, hoveringTestsButton ? hoveringBorderColour : borderColour);
         	
-        	RenderUtils.renderScaledText(screen, context, Text.literal("Tier Test History"), testsButtonX + testsButtonTextHorizontalPadding, testsButtonY + (int) ((testsButtonHeight - testsButtonTextHeight) / 2f) + 1, 0xFFFFFFFF, 1.0f);
+        	RenderUtils.renderScaledText(screen, context, testsButtonText, testsButtonX + testsButtonTextHorizontalPadding, testsButtonY + (int) ((testsButtonHeight - testsButtonTextHeight) / 2f) + 1, 0xFFFFFFFF, 1.0f);
         	
         	if (screen.isMouseDown() && hoveringTestsButton) {
         		screen.mc.setScreen(new TierTestHistoryScreen(player));
@@ -140,7 +160,7 @@ public class ScreenMixin {
         int cardWidth = (RenderUtils.iX - 360) / 2;
         int cardHeight = 47;
         int cardXOffset = 250;
-        int cardYOffset = isMCTiers ? cardHeight + 120 : 100;
+        int cardYOffset = isMCTiers ? cardHeight + 83 : 100;
         
         if (isSkeleton) return;
         
@@ -218,7 +238,7 @@ public class ScreenMixin {
         	int gamemodesPerColumn = isMCTiers ? 4 : 5;
         	if (index % gamemodesPerColumn == 0) {
         		cardXOffset += cardWidth + 20;
-        		cardYOffset = isMCTiers ? cardHeight + 120 : 100;
+        		cardYOffset = isMCTiers ? cardHeight + 83 : 100;
         	}
         }
 	}
@@ -427,6 +447,8 @@ public class ScreenMixin {
     			MinecraftClient.getInstance().setScreen(new ProfileScreen(player.name(), true, gamemode, scrollOffset / (cardHeight + paddingY), screen.getSearchQuery()));
 	    	}
 	    	
+	    	Region region = player.region();
+	    	
 	    	int playerNameStartColour = 0xFFFFFFFF;
 	    	int playerNameStopColour = 0xFFFFFFFF;
 	    	Text playerNameText = Text.literal(player.name());
@@ -440,6 +462,10 @@ public class ScreenMixin {
 	    		
 	    		playerNameStartColour = tier.getLightColour();
 	    		playerNameStopColour = tier.getDarkColour();
+	    		
+	    		Text sepText = Text.literal(" • ");
+	    		RenderUtils.renderScaledText(screen, context, sepText, cardXOffset + rankingWidth + animationOffset + 40 + screen.getTextRenderer().getWidth(playerNameText), y + cardHeight / 2 - screen.getTextRenderer().fontHeight / 2, 0xFFFFFFFF, 1.0f);
+	    		RenderUtils.renderScaledText(screen, context, Text.literal(region.getCode()), cardXOffset + rankingWidth + animationOffset + 40 + screen.getTextRenderer().getWidth(playerNameText) + screen.getTextRenderer().getWidth(sepText), y + cardHeight / 2 - screen.getTextRenderer().fontHeight / 2, region.getLightColour(), 1.0f);
 	    	} else {
 	    		Tier tier = player.getBestTier();
 	    		
@@ -449,7 +475,11 @@ public class ScreenMixin {
 	    		
 	    		playerNameStartColour = tier.getLightColour();
 	    		playerNameStopColour = tier.getDarkColour();
-	    		RenderUtils.renderScaledText(screen, context, Text.literal(" • " + player.getLeaderboardPoints() + " pts"), cardXOffset + rankingWidth + animationOffset + 40 + screen.getTextRenderer().getWidth(playerNameText), y + cardHeight / 2 - screen.getTextRenderer().fontHeight / 2, 0xFFFFFFFF, 1.0f);
+	    		Text leaderboardPointsText = Text.literal(" • " + player.getLeaderboardPoints() + " pts");
+	    		Text sepText = Text.literal(" • ");
+	    		RenderUtils.renderScaledText(screen, context, leaderboardPointsText, cardXOffset + rankingWidth + animationOffset + 40 + screen.getTextRenderer().getWidth(playerNameText), y + cardHeight / 2 - screen.getTextRenderer().fontHeight / 2, 0xFFFFFFFF, 1.0f);
+	    		RenderUtils.renderScaledText(screen, context, sepText, cardXOffset + rankingWidth + animationOffset + 40 + screen.getTextRenderer().getWidth(playerNameText) + screen.getTextRenderer().getWidth(leaderboardPointsText), y + cardHeight / 2 - screen.getTextRenderer().fontHeight / 2, 0xFFFFFFFF, 1.0f);
+	    		RenderUtils.renderScaledText(screen, context, Text.literal(region.getCode()), cardXOffset + rankingWidth + animationOffset + 40 + screen.getTextRenderer().getWidth(playerNameText) + screen.getTextRenderer().getWidth(leaderboardPointsText) + screen.getTextRenderer().getWidth(sepText), y + cardHeight / 2 - screen.getTextRenderer().fontHeight / 2, region.getLightColour(), 1.0f);
 	    	}
 	    	
 	    	RenderUtils.renderScaledTextWithGradient(screen, context, playerNameText, cardXOffset + rankingWidth + animationOffset + 40, y + cardHeight / 2 - screen.getTextRenderer().fontHeight / 2, playerNameStartColour, playerNameStopColour, 1.0f);
@@ -863,15 +893,15 @@ public class ScreenMixin {
 	    context.disableScissor();
 	    RenderUtils.renderBorder(screen, context, panelX, panelY, panelWidth, panelHeight, 0xFFFFFFFF);
 	}
-
-
 	
 	@Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/gui/screen/Screen;render(Lnet/minecraft/client/gui/DrawContext;IIF)V")
 	public void render(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo info) {
+		RenderUtils.beginFrame();
 		Screen screen = (Screen) ((Object) this);
 		if (screen instanceof ProfileScreen) this.renderProfileScreen((ProfileScreen) screen, context, mouseX, mouseY, delta);
 		else if (screen instanceof LeaderboardScreen) this.renderLeaderboardScreen((LeaderboardScreen) screen, context, mouseX, mouseY, delta);
 		else if (screen instanceof SettingsScreen) this.renderSettingsScreen(((SettingsScreen) screen), context, mouseX, mouseY, delta);
 		else if (screen instanceof TierTestHistoryScreen) this.renderTierTestScreen(((TierTestHistoryScreen) screen), context, mouseX, mouseY, delta);
+		RenderUtils.applyCursor();
 	}
 }

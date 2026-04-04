@@ -26,7 +26,6 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	
 }
 
 processResources {
@@ -75,6 +74,12 @@ publishing {
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
 	}
+}
+
+tasks.named("runClient") {
+    doFirst {
+        jvmArgs += ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005", "-javaagent:C:/Users/Mitchell/Documents/TierNametags/TierNametags-1.21.1/TierNametags/sponge.jar"]
+    }
 }
 
 tasks.named("remapJar") {

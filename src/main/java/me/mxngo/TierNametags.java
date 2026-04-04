@@ -23,6 +23,8 @@ import me.mxngo.config.ConfigManager;
 import me.mxngo.config.DisplayType;
 import me.mxngo.config.TierNametagsConfig;
 import me.mxngo.config.TierPosition;
+import me.mxngo.config.Tierlist;
+import me.mxngo.http.wrappers.MCTiersAPIWrapper;
 import me.mxngo.tiers.Gamemode;
 import me.mxngo.tiers.Leaderboard;
 import me.mxngo.tiers.Leaderboard.LeaderboardEntry;
@@ -30,10 +32,11 @@ import me.mxngo.tiers.SkinCache;
 import me.mxngo.tiers.Tier;
 import me.mxngo.tiers.TieredPlayer;
 import me.mxngo.tiers.TierlistManager;
-import me.mxngo.tiers.wrappers.MCTiersAPIWrapper;
 import me.mxngo.ui.screens.LeaderboardScreen;
 import me.mxngo.ui.screens.ProfileScreen;
 import me.mxngo.ui.screens.SettingsScreen;
+import me.mxngo.ui.screens.TierTestHistoryScreen;
+import me.mxngo.update.VersionChecker;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -50,7 +53,6 @@ import net.minecraft.util.Pair;
 public class TierNametags implements ModInitializer {
 	public static final String MODID = "tiernametags";
 	public static final String LOCALEMODID = "Tier Nametags";
-	public static final String VERSION = "1.0.5";
 	
 	private static TierNametags instance = new TierNametags();
 	private final Logger logger = LoggerFactory.getLogger(LOCALEMODID);
@@ -58,6 +60,7 @@ public class TierNametags implements ModInitializer {
 	private static MinecraftClient mc;
 	
 	public TierlistManager tierlistManager;
+	public VersionChecker versionChecker;
 	
 	private KeyBinding cycleGamemodeKeybinding;
 	private KeyBinding cycleGamemodeBackwardsKeybinding;
@@ -69,9 +72,12 @@ public class TierNametags implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		mc = MinecraftClient.getInstance();
-		
+
 		instance.tierlistManager = new TierlistManager();
 		instance.tierlistManager.doInitialFetch();
+		
+		instance.versionChecker = new VersionChecker();
+		instance.versionChecker.fetchLatestVersion();
 		
 		instance.cycleGamemodeKeybinding = KeyBindingHelper.registerKeyBinding(
 			new KeyBinding("tiernametags.keybinds.cycle", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "tiernametags.localemodid")
@@ -139,6 +145,69 @@ public class TierNametags implements ModInitializer {
                             })
                         )
                     )
+                    
+                    .then(literal("discord")
+                    	.executes(ctx -> {
+                    		FabricClientCommandSource source = ctx.getSource();
+                    		source.sendFeedback(instance.getTierNametagsChatLabel().append(" ").append("https://discord.gg/VA6WYtuSgs"));
+                    		return 1;
+                    	})
+                    )
+                    
+                    .then(literal("tier_test_history")
+                            .then(argument("player", StringArgumentType.word())
+                        		.suggests((ctx, builder) -> {
+                        			suggest(ctx, builder, mc.getNetworkHandler().getPlayerList().stream().map(playerListEntry -> playerListEntry.getProfile().getName()).toList());
+                                    return builder.buildFuture();
+                                })
+                                .executes(ctx -> {
+                                    String name = StringArgumentType.getString(ctx, "player");
+                                    FabricClientCommandSource source = ctx.getSource();
+                                    
+                                    Tierlist currentTierlist = instance.tierlistManager.getActiveTierlist();
+                                    
+                                    if (!currentTierlist.isMCTiers()) {
+                                    	source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append("Tier test history is only available on MCTiers."));
+                                    	return 1;
+                                    }
+                                    
+                                    Leaderboard currentLeaderboard = instance.tierlistManager.getActiveLeaderboard();
+                                    LeaderboardEntry entry = currentLeaderboard.getEntryIgnoreCase(name);
+                                    
+                                    boolean playerExists = entry != null && entry.state().isHydrated();
+                                    if (currentLeaderboard.getPlayers().isEmpty()) {
+                                    	source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append("No player profiles found. Is ").append(currentLeaderboard.getName()).append(" offline?"));
+                                    	return 0;
+                                    } else if (!playerExists) {
+                                    	if (instance.tierlistManager.getActiveTierlist().isMCTiers()) {
+                                    		((MCTiersAPIWrapper) instance.tierlistManager.getAPIWrapper()).getPlayer(name).thenAccept(player -> {
+                                    			if (player == null) return;
+                                    			
+                                    			instance.tierlistManager.getActiveLeaderboard().addHydratedPlayers(new TieredPlayer[] { player });
+                                    			
+                                    			MinecraftClient mc = MinecraftClient.getInstance();
+                            					mc.send(() -> {
+                            						mc.setScreen(new TierTestHistoryScreen(player));
+                            					});
+                                    		}).exceptionally(exception -> {
+                                    			source.sendError(TierNametags.getInstance().getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append(name)
+                                						.append(" does not have a profile on ").append(TierNametags.getInstance().tierlistManager.getActiveLeaderboard().getName()).append("."));
+                                    			return null;
+                                    		});
+                                    	} else {
+                                    		source.sendError(instance.getTierNametagsChatLabel(0xFF5959, 0x9C0909).append(" ").append(name).append(" does not have a profile on ").append(currentLeaderboard.getName()).append("."));
+                                    	}
+                                    	return 0;
+                                    }
+                                    
+                                    mc.send(() -> {
+                                    	mc.setScreen(new TierTestHistoryScreen(entry.player()));
+                                    });
+                                    
+                                    return 1;
+                                })
+                            )
+                        )
                     
 	                .then(literal("settings")
 	                	.executes(ctx -> {

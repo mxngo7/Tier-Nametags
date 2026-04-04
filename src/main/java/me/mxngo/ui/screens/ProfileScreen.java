@@ -14,6 +14,7 @@ import com.mojang.authlib.GameProfile;
 
 import me.mxngo.TierNametags;
 import me.mxngo.config.TierNametagsConfig;
+import me.mxngo.http.wrappers.MCTiersAPIWrapper;
 import me.mxngo.mixin.IMinecraftClientAccessor;
 import me.mxngo.mixin.IPlayerSkinWidgetAccessor;
 import me.mxngo.mixin.IUserCacheInvoker;
@@ -21,7 +22,6 @@ import me.mxngo.tiers.Gamemode;
 import me.mxngo.tiers.Leaderboard.LeaderboardEntry;
 import me.mxngo.tiers.SkinCache;
 import me.mxngo.tiers.TieredPlayer;
-import me.mxngo.tiers.wrappers.MCTiersAPIWrapper;
 import me.mxngo.ui.ITierNametagsScreen;
 import me.mxngo.ui.util.RenderUtils;
 import net.fabricmc.api.EnvType;

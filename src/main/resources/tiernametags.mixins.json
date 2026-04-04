@@ -10,6 +10,7 @@
 		"ClientWorldMixin",
 		"PlayerListHudMixin",
 		"ChatHudMixin",
+		"TitleScreenMixin",
 		"IPlayerSkinWidgetAccessor",
 		"IMinecraftClientAccessor",
 		"IUserCacheInvoker"

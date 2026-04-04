@@ -1,7 +1,10 @@
 package me.mxngo.ui.util;
 
+import org.lwjgl.glfw.GLFW;
+
 import me.mxngo.TierNametags;
 import me.mxngo.ui.ITierNametagsScreen;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.MutableText;
@@ -9,6 +12,11 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class RenderUtils {
+	private static final MinecraftClient mc = MinecraftClient.getInstance();
+	private static boolean mouseHand = false;
+	private static boolean hoveringAny = false;
+	private static final long handCursor = GLFW.glfwCreateStandardCursor(GLFW.GLFW_HAND_CURSOR);
+	
 	public static final int iX = 854;
 	public static final int iY = 480;
 	
@@ -116,8 +124,37 @@ public class RenderUtils {
 		context.drawTexture(identifier, getScaled(x, iX, screen.width), getScaled(y, iY, screen.height), u, v, width, height, textureWidth, textureHeight);
 	}
 	
+	private static void setHandCursor() {
+		mouseHand = true;
+		long handle = mc.getWindow().getHandle();
+		GLFW.glfwSetCursor(handle, handCursor);
+	}
+	
+	private static void resetCursor() {
+		mouseHand = false;
+	    long window = mc.getWindow().getHandle();
+	    GLFW.glfwSetCursor(window, 0);
+	}
+	
+	public static void beginFrame() {
+		hoveringAny = false;
+	}
+	
+	public static void applyCursor() {
+		if (hoveringAny != mouseHand) {
+	        if (hoveringAny) setHandCursor();
+	        else resetCursor();
+	    }
+	}
+	
+	public static boolean isMouseHovering(Screen screen, double mouseX, double mouseY, int x1, int y1, int x2, int y2, boolean isClickable) {
+		boolean isHovering = mouseX >= getScaled(x1, iX, screen.width) && mouseX <= getScaled(x2, iX, screen.width) && mouseY >= getScaled(y1, iY, screen.height) && mouseY <= getScaled(y2, iY, screen.height);
+		if (isHovering && isClickable) hoveringAny = true;
+		return isHovering;
+	}
+	
 	public static boolean isMouseHovering(Screen screen, double mouseX, double mouseY, int x1, int y1, int x2, int y2) {
-		return mouseX >= getScaled(x1, iX, screen.width) && mouseX <= getScaled(x2, iX, screen.width) && mouseY >= getScaled(y1, iY, screen.height) && mouseY <= getScaled(y2, iY, screen.height);
+		return isMouseHovering(screen, mouseX, mouseY, x1, y1, x2, y2, true);
 	}
 	
 	public static int darken(int color, float factor) {
