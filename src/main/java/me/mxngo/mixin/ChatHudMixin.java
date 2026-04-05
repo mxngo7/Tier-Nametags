@@ -1,5 +1,7 @@
 package me.mxngo.mixin;
 
+import java.util.List;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -24,13 +26,18 @@ public class ChatHudMixin {
 		if (!config.chat.enabled()) return message;
 		if (mc.world == null) return message;
 		
+		String plaintext = message.getString().toLowerCase();
+		List<Text> children = message.getWithStyle(message.getStyle());
+		
 		for (PlayerListEntry player : mc.getNetworkHandler().getPlayerList()) {
 			String name = player.getProfile().name();
-			if (!message.getString().toLowerCase().contains(name.toLowerCase())) continue;
+			if (!plaintext.contains(name.toLowerCase())) continue;
+			
+			MutableText component = instance.getNametagComponent(name, config.chat);
+			if (component == null) continue;
 			
 			MutableText result = Text.empty();
-
-			for (Text child : message.getWithStyle(message.getStyle())) {
+			for (Text child : children) {
 				String text = child.getString();
 				int from = 0;
 				int index;
@@ -46,12 +53,12 @@ public class ChatHudMixin {
 				if (from < text.length()) result.append(Text.literal(text.substring(from)).setStyle(child.getStyle()));
 			}
 			
-			MutableText component = instance.getNametagComponent(name, config.chat);
-			if (component == null) continue;
-
 			message = instance.applyTierToDisplayName(name, result, component, config.chat);
+			children = message.getWithStyle(message.getStyle());
 		}
 		
 		return message;
 	}
+	
+	
 }

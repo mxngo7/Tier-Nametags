@@ -362,7 +362,7 @@ public class TierNametags implements ModInitializer {
 			else return result;
 		}
 	}
-	
+
 	public Leaderboard getLeaderboard() {
 		return instance.leaderboard;
 	}
